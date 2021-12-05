@@ -1,11 +1,11 @@
---track0:ç¯„å›²,0,3000,100,0.01
---track1:å¼·åº¦,0,1000,20,0.1
---track2:é«˜ã•,-3000,3000,0,0.1
---track3:ä¹±æ•°,1,1000,1,1
---check0:è‰²ãšã‚Œ,0
---dialog:ãšã‚Œå¹…,zure=5;è§’åº¦,kakudo=0;å¼·ã•,tuyosa=100;type,taipu=0;
+--track0:”ÍˆÍ,0,3000,100,0.01
+--track1:‹­“x,0,1000,20,0.1
+--track2:‚‚³,-3000,3000,0,0.1
+--track3:—”,1,1000,1,1
+--check0:F‚¸‚ê,0
+--dialog:‚¸‚ê•,zure=5;Šp“x,kakudo=0;‹­‚³,tuyosa=100;type,taipu=0;
 
---ç¯„å›²ã€é«˜ã•
+--”ÍˆÍA‚‚³
 haba = obj.h / 2 - obj.track0 / 2
 habani = obj.h / 2
 
@@ -15,17 +15,17 @@ rannsu = rand(habani,haba,sanban)
 rannsuni = rand(habani,haba,sanbanni)
 kezu = rannsu - obj.track2
 kezuni = rannsuni + obj.track2
-obj.effect("ã‚¯ãƒªãƒƒãƒ”ãƒ³ã‚°","ä¸Š",kezu,"ä¸‹",kezuni)
+obj.effect("ƒNƒŠƒbƒsƒ“ƒO","ã",kezu,"‰º",kezuni)
 
 
---å¼·åº¦
+--‹­“x
 sanbansan = sanban + 2000
 syousai = obj.track1
 syousaini = -1 * syousai
 rannsusan = rand(syousaini,syousai,sanbansan)
 obj.ox = rannsusan
 
---è‰²ãšã‚Œ
+--F‚¸‚ê
 if(obj.check0)then
-obj.effect("è‰²ãšã‚Œ","ãšã‚Œå¹…",zure,"è§’åº¦",kakudo,"å¼·ã•",tuyosa,"type",taipu)
+obj.effect("F‚¸‚ê","‚¸‚ê•",zure,"Šp“x",kakudo,"‹­‚³",tuyosa,"type",taipu)
 end
