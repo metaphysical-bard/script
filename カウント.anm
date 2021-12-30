@@ -4,7 +4,7 @@
 --track1:サイズ,0,10000,100,0.1
 --track2:X,-10000,10000,0,0.1
 --track3:Y,-10000,10000,0,0.1
---dialog:時間の間隔,mozikan=1;anm効果時間,anm=0;桁数,keta=4;少数点,syoketa=0;初期値,syoki=0;逆/chk,gyaku=0;色1/col,col1=0xffffff;色2/col,col2=0xffffff;フォント,font="メイリオ";文字タイプ,type=0;
+--dialog:時間の間隔,mozikan=1;anm効果時間,anm=0;桁数,keta=4;小数点,syoketa=0;初期値,syoki=0;逆/chk,gyaku=0;色1/col,col1=0xffffff;色2/col,col2=0xffffff;フォント,font="メイリオ";文字タイプ,type=0;
 
 local b=mozikan*(10^(keta-1))
 local size=obj.track1
