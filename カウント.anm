@@ -1,0 +1,53 @@
+--カウント
+
+--track0:文字幅,-10000,10000,100,0.1
+--track1:サイズ,0,10000,100,0.1
+--track2:X,-10000,10000,0,0.1
+--track3:Y,-10000,10000,0,0.1
+--dialog:時間の間隔,mozikan=1;anm効果時間,anm=0;桁数,keta=4;少数点,syoketa=0;初期値,syoki=0;逆/chk,gyaku=0;色1/col,col1=0xffffff;色2/col,col2=0xffffff;フォント,font="メイリオ";文字タイプ,type=0;
+
+local b=mozikan*(10^(keta-1))
+local size=obj.track1
+local xx=obj.track2
+local yy=obj.track3
+local haba=obj.track0
+local e=obj.time+(syoki*mozikan)
+
+if(gyaku==1)then
+ e=obj.time-(syoki*mozikan)
+end
+
+for i=0,keta-1 do
+
+	if(i~=0)then
+	 b=b*0.1
+	end
+
+	local a=e/b%10
+
+	if(gyaku==1)then
+	 a=10-a
+	end
+
+	if(a==10)then
+	 a=0
+	end
+
+	if(anm~=0)then
+	 if(anm>=(obj.time%b))then
+	  size=(size/anm)*(obj.time%b)
+	 else
+	  size=size
+	 end
+	end
+
+	obj.setfont(font,size,type,col1,col2)
+	obj.load(string.format("%d",a))
+	obj.draw(obj.ox+xx+i*haba,obj.oy+yy)
+end
+
+if(syoketa~=0)then
+ obj.setfont(font,size,type,col1,col2)
+ obj.load(string.format("."))
+ obj.draw(obj.ox+xx+(keta-syoketa)*haba-haba/2,obj.oy+yy)
+end
