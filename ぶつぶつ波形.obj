@@ -4,13 +4,17 @@
 　丸を並べ、中心と外側で変化をつける。
 　エフェクトではなく、色相変化にしたい。
 　ぼかしとグローでうまくいく可能性あり。
+
+ 中心の大きさ
+ 緩やかさ
+　上記二つは直観だと操作できないやつです。
 ]]
 
 --track0:領域,0,10000,1000
 --track1:最小サイズ,0,10000,10
---track2:1,0,100,0
+--track2:列幅,0,10000,50
 --track3:拡大率,0,10000,100,0.01
---dialog:列数,retu=5;中心の大きさ,tyu=100;緩やかさ,yuru=50;色/col,col=0xff;
+--dialog:列数,retu=5;列個数,kosu=5;中心の大きさ,tyu=100;緩やかさ,yuru=50;色/col,col=0xff;
 
 div=1
 buf={}
@@ -24,8 +28,8 @@ obj.draw(obj.ox,obj.oy)
 a=retu
 
 for c=0,a do
-l=c*50
-n=c*5+1
+l=c*obj.track2
+n=c*kosu+1
 for i=0,n-1 do
   r=360*i/n
   x= math.sin(r*math.pi/180)*l
