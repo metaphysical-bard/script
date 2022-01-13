@@ -1,0 +1,98 @@
+--[[スクリプト制御用のやつらです。プログラム書ける人は
+スクリプト使うよりも、こっちを改良したほうがいいかも。]]
+
+
+--ぶつぶつ波形
+div=1
+buf={}
+b=obj.getaudio(buf,"audiobuffer","spectrum",div)
+
+for c=0,5 do
+l=c*50
+n=c*5+1
+for i=0,n-1 do
+  r=360*i/n
+  x= math.sin(r*math.pi/180)*l
+  y=-math.cos(r*math.pi/180)*l
+  rz=360*i/n
+
+  size=buf[1]/(50*c+100)
+  if(size<=10)then
+  size=10
+  end
+
+  obj.load("figure","円",0xff,size)
+  obj.effect("色調補正","色相",size)
+  obj.draw(obj.ox+x,obj.oy+y,0,1,1,0,0,rz)
+end
+end
+
+obj.load("tempbuffer")
+
+
+
+
+
+--音の大きさをはかるやつ。数値がでできます。
+div=1
+buf={}
+b=obj.getaudio(buf,"audiobuffer","spectrum",div)
+obj.load(string.format("%05d",buf[1]))
+
+
+
+
+
+--カウント(複数桁非対応)
+local b=0.3--数字が変化する間隔
+local size=200--最大サイズ
+local xx=0--xへの移動距離
+local yy=0--yへの移動距離
+local a=obj.time/b%10
+if (a==10) then a=0 end
+if(0.2>=(obj.time%b))then--アニメーションの間隔は0.2秒
+ size=(size/0.2)*(obj.time%b)
+end
+obj.setfont("メイリオ",size)
+obj.load(string.format("%d",a))
+obj.draw(obj.ox+xx,obj.oy+yy)
+
+
+
+
+
+--円波形(没案)
+div=50
+buf={}
+b=obj.getaudio(buf,"audiobuffer","spectrum",div)
+
+obj.setoption("drawtarget","tempbuffer",1000,1000)
+obj.load("figure","円",0xff,0)
+obj.draw(obj.ox,obj.oy)
+
+for i=0,(b-1)/2 do
+  l=buf[1+i]/30+100
+  r=360*i/b
+  x= math.sin(r*math.pi/180)*l
+  y=-math.cos(r*math.pi/180)*l
+  rz=360*i/b
+
+  obj.setoption("drawtarget","tempbuffer")
+  obj.load("figure","円",0xfff,20)
+  obj.draw(obj.ox+x,obj.oy+y,0,1,1,0,0,rz)
+end
+
+for i=0,(b-1)/2 do
+  l=buf[1+i]/30+100
+  r=360-360*i/b
+
+  x= math.sin(r*math.pi/180)*l
+  y=-math.cos(r*math.pi/180)*l
+  rz=360*i/b
+
+  obj.setoption("drawtarget","tempbuffer")
+  obj.load("figure","円",0xfff,20)
+  obj.draw(obj.ox+x,obj.oy+y,0,1,1,0,0,rz)
+end
+
+obj.load("tempbuffer")

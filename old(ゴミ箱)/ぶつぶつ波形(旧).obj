@@ -1,0 +1,54 @@
+--[[
+コンセプト
+　音声波形をつくる。
+　丸を並べ、中心と外側で変化をつける。
+　エフェクトではなく、色相変化にしたい。
+　ぼかしとグローでうまくいく可能性あり。
+
+ 中心の大きさ
+ 緩やかさ
+　上記二つは直観だと操作できないやつです。
+]]
+
+--track0:領域,0,10000,1000
+--track1:最小サイズ,0,10000,10
+--track2:最大サイズ,0,10000,30
+--track3:列幅,0,10000,50
+--dialog:列数,retu=5;列個数,kosu=5;中心の大きさ,tyu=100;緩やかさ,yuru=50;色/col,col=0xff;
+
+div=1
+buf={}
+b=obj.getaudio(buf,"audiobuffer","spectrum",div)
+
+w=obj.track0
+obj.setoption("drawtarget","tempbuffer",w,w)
+obj.load("figure","円",0xff,0)
+obj.draw(obj.ox,obj.oy)
+
+for c=0,retu do
+l=c*obj.track3
+n=c*kosu+1
+for i=0,n-1 do
+  r=360*i/n
+  x= math.sin(r*math.pi/180)*l
+  y=-math.cos(r*math.pi/180)*l
+  rz=360*i/n
+
+  size=buf[1]/(yuru*c+tyu)
+
+  if(size<=obj.track1)then
+   size=obj.track1
+  elseif(size>=obj.track2)then
+   size=obj.track2
+  end
+
+  obj.setoption("drawtarget","tempbuffer")
+  obj.load("figure","円",col,size)
+  obj.effect("色調補正","色相",size)
+  obj.effect()
+  obj.draw(obj.ox+x,obj.oy+y,0,1,1,0,0,rz)
+end
+end
+
+obj.load("tempbuffer")
+obj.draw()

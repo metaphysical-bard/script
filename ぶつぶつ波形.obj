@@ -1,34 +1,19 @@
 --[[
-コンセプト
-　音声波形をつくる。
-　丸を並べ、中心と外側で変化をつける。
-　エフェクトではなく、色相変化にしたい。
-　ぼかしとグローでうまくいく可能性あり。
-
- 中心の大きさ
- 緩やかさ
-　上記二つは直観だと操作できないやつです。
+ 音／
+　　10と100と500で比べると分かりやすいと思います。
 ]]
 
---track0:領域,0,10000,1000
---track1:最小サイズ,0,10000,10
---track2:列幅,0,10000,50
---track3:拡大率,0,10000,100,0.01
---dialog:列数,retu=5;列個数,kosu=5;中心の大きさ,tyu=100;緩やかさ,yuru=50;色/col,col=0xff;
+--track0:色相変化,-300,300,1
+--track1:最小制限,0,10000,10
+--track2:最大制限,0,10000,30
+--track3:列幅,0,10000,50
+--dialog:列数,retu=5;列個数,kosu=5;音／,tyu=100;緩やかさ,yuru=50;色相音対応/chk,zyu=0;音分割数,div=1;波長指定,hatyo=1;色/col,col=0xff;
 
-div=1
 buf={}
 b=obj.getaudio(buf,"audiobuffer","spectrum",div)
 
-w=obj.track0
-obj.setoption("drawtarget","tempbuffer",w,w)
-obj.load("figure","円",0xff,0)
-obj.draw(obj.ox,obj.oy)
-
-a=retu
-
-for c=0,a do
-l=c*obj.track2
+for c=0,retu do
+l=c*obj.track3
 n=c*kosu+1
 for i=0,n-1 do
   r=360*i/n
@@ -36,18 +21,25 @@ for i=0,n-1 do
   y=-math.cos(r*math.pi/180)*l
   rz=360*i/n
 
-  size=buf[1]/(yuru*c+tyu)
+  size=buf[hatyo]/(yuru*c+tyu)
+
+if(zyu)then
+  siki=size*obj.track0
+end
+
   if(size<=obj.track1)then
-  size=obj.track1
+   size=obj.track1
+  elseif(size>=obj.track2)then
+   size=obj.track2
   end
 
-  obj.setoption("drawtarget","tempbuffer")
+if(zyu==0)then
+  siki=size*obj.track0
+end
+
   obj.load("figure","円",col,size)
-  obj.effect("色調補正","色相",size)
+  obj.effect("色調補正","色相",siki)
+  obj.effect()
   obj.draw(obj.ox+x,obj.oy+y,0,1,1,0,0,rz)
 end
 end
-
-obj.load("tempbuffer")
-obj.effect("拡大率","拡大率",obj.track3)
-obj.draw()
