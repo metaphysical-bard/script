@@ -1,0 +1,309 @@
+--[[
+
+・コンセプト
+	複数の配置を行き来できるスクリプトを作成する。(個別オブジェクト用)
+	配列とobj.interpolationを使いたい。
+	obj.interpolation(time,x0,y0,x1,y1,x2,y2,x3,y3,x4,y4)
+	作成の難しい円形などは、予めテンプレートを用意しておきたい。
+
+・使用方法
+	個別移動以外は、勘で扱えます。
+	個別移動の使い方は、僕が作成した動画をみてください。
+
+・断り書き
+	座標回転はテツさんとゆうきさんのプログラムをパクッて、勝手に改変しています。
+	そのため、このスクリプトは予告なく配布を終了する可能性があります。
+
+・連絡先
+	https://twitter.com/metaphysicalba1
+
+]]
+---------------------------------------------------------------------------
+@X,Y,Z,拡大率
+--track0:X,-10000,10000,0
+--track1:Y,-10000,10000,0
+--track2:Z,-10000,10000,0
+--track3:拡大率,0,5000,100,0.01
+--dialog:番号指定,local a={nil};
+for i=0,#a do
+ if(obj.index==a[i])then
+  obj.ox=obj.ox+obj.track0
+  obj.oy=obj.oy+obj.track1
+  obj.oz=obj.oz+obj.track2
+  obj.zoom=obj.track3/100
+ end
+end
+----------------------------------------------------------------------------
+@X軸回転,Y軸回転,Z軸回転,透明度
+--track0:X軸回転,-3600,3600,0,0.01
+--track1:Y軸回転,-3600,3600,0,0.01
+--track2:Z軸回転,-3600,3600,0,0.01
+--track3:透明度,0,100,0
+--dialog:番号指定,local a={nil};
+for i=0,#a do
+ if(obj.index==a[i])then
+  obj.rx=obj.rx+obj.track0
+  obj.ry=obj.ry+obj.track1
+  obj.rz=obj.rz+obj.track2
+  obj.alpha=1-obj.track3/100
+ end
+end
+------------------------------------------------------------------------------
+@中心X,中心Y,中心Z,縦横比
+--track0:中心X,-2000,2000,0
+--track1:中心Y,-2000,2000,0
+--track2:中心Z,-2000,2000,0
+--track3:縦横比,-100,100,0
+--dialog:番号指定,local a={nil};
+for i=0,#a do
+ if(obj.index==a[i])then
+  obj.cx=obj.rx+obj.track0
+  obj.cy=obj.ry+obj.track1
+  obj.cz=obj.rz+obj.track2
+  obj.aspect=obj.track3/100
+ end
+end
+------------------------------------------------------------------------------
+@X,Yランダム
+--track0:X最大,-10000,10000,0
+--track1:X最小,-10000,10000,0
+--track2:Y最大,-10000,10000,0
+--track3:Y最小,-10000,10000,0
+--dialog:frame,local fra=obj.frame;seed,local ransu=0;
+obj.ox=obj.ox+obj.rand(obj.track1,obj.track0,ransu,fra)
+obj.oy=obj.oy+obj.rand(obj.track3,obj.track2,ransu,fra)
+-------------------------------------------------------------------------------
+@拡大率,透明度ランダム
+--track0:拡大率最大,0,5000,100,0.01
+--track1:拡大率最小,0,5000,100,0.01
+--track2:透明度最大,0,100,0
+--track3:透明度最小,0,100,0
+--dialog:frame,local fra=obj.frame;seed,local ransu=0;
+obj.zoom=obj.rand(obj.track1,obj.track0,ransu,fra)/100
+obj.alpha=1-obj.rand(obj.track3,obj.track2,ransu,fra)/100
+------------------------------------------------------------------------------
+@個別移動
+--track0:形態,-1000,9000,0,0.01
+--track1:ずれ,-1000,1000,0,0.01
+--track2:ランダム,-1000,1000,0,0.01
+--track3:ずれ方,0,2,1,1
+--check0:逆,1
+--dialog:参考座標,local aira={aa[1],aa[2],aa[3],aa[4]};ずれ追加,local aad=0;ずれ*,local zu=1;ランダム*,local ka=1;分割数,local bun=1000;seed,local sed=-1;
+
+local xx=0
+local yy=0
+local zz=0
+local jj=0
+obj.ox=0
+obj.oy=0
+obj.oz=0
+
+if(obj.track3==1 and obj.check0)then
+	jj=obj.index
+elseif(obj.track3==1)then
+	jj=obj.num-1-obj.index
+elseif(obj.track3==2 and obj.check0)then
+	if((obj.num-1)/2>=obj.index)then
+	jj=obj.index*2
+	else
+	jj=(obj.num-1-obj.index)*2
+	end
+elseif(obj.track3==2)then
+	if((obj.num-1)/2>=obj.index)then
+	jj=obj.num-1-obj.index*2
+	else
+	jj=obj.num-1-(obj.num-1-obj.index)*2
+	end
+else
+	jj=0
+end
+
+local ovg=(obj.track0+obj.track1/100*(jj+aad)*zu+obj.rand(0,bun,sed-obj.index,1)/100*obj.track2*ka)/100
+local ii_0=math.floor(ovg)
+local ii_1=ii_0+1
+local ii_2=ii_0+2
+local ii_3=ii_0+3
+local xi=obj.index*3+1
+local yi=obj.index*3+2
+local zi=obj.index*3+3
+
+if(ii_0<=0)then
+	ii_0=1
+	ii_1=2
+	ii_2=3
+	ii_3=4
+	ovg=ovg-1
+elseif(ii_3>#aira)then
+	ii_0=#aira-3
+	ii_1=ii_0+1
+	ii_2=ii_0+2
+	ii_3=ii_0+3
+	ovg=ovg-(#aira-3)
+else
+	ovg=ovg%1
+end
+
+xx,yy,zz=obj.interpolation(ovg,aira[ii_0][xi],aira[ii_0][yi],aira[ii_0][zi],aira[ii_1][xi],aira[ii_1][yi],aira[ii_1][zi],aira[ii_2][xi],aira[ii_2][yi],aira[ii_2][zi],aira[ii_3][xi],aira[ii_3][yi],aira[ii_3][zi])
+obj.ox=xx
+obj.oy=yy
+obj.oz=zz
+------------------------------------------------------------------------------------
+@正渦線
+--track0:distance,-1000,1000,30,0.01
+--track1:distance*,-100,100,1,0.01
+--track2:size,-1000,1000,10,0.01
+--track3:slide,-1000,1000,0
+--dialog:size*,local siz=1;slide*,local bai=1;
+obj.ox=0
+obj.oy=0
+local aa=obj.track2*siz
+local sita=obj.track0*obj.track1/obj.num*(obj.index+obj.track3*bai)
+obj.ox=aa*sita*math.cos(sita)
+obj.oy=aa*sita*math.sin(sita)
+--------------------------------------------------------------------------------------
+@ハイポサイクロイド
+--track0:a,-1000,1000,3,0.01
+--track1:b,-1000,1000,1,0.01
+--track2:size,-1000,1000,100,0.01
+--track3:slide,-1000,1000,0
+--dialog:size*,local siz=1;slide*,local bai=1;
+local cc=obj.track2*siz
+local aa=obj.track0*cc
+local bb=obj.track1*cc
+obj.ox=0
+obj.oy=0
+local sita=2*math.pi/obj.num*(obj.index+obj.track3*bai)
+obj.ox=(aa-bb)*math.cos(sita)+bb*math.cos((bb-aa)/bb*sita)
+obj.oy=(aa-bb)*math.sin(sita)+bb*math.sin((bb-aa)/bb*sita)
+--------------------------------------------------------------------------------------
+@トロコイド
+--track0:a,-1000,1000,10,0.01
+--track1:b,-1000,1000,1,0.01
+--track2:size,-1000,1000,100,0.01
+--track3:slide,-1000,1000,0
+--dialog:size*,local siz=1;slide*,local bai=1;
+local n,h=obj.track0,obj.track1
+local sita=2*math.pi/obj.num*(obj.index+obj.track3*bai)
+obj.ox=((n-1)*math.cos(sita)+h*math.cos((n-1)*sita))/n*obj.track2*siz
+obj.oy=((n-1)*math.sin(sita)+h*math.sin((n-1)*sita))/n*obj.track2*siz
+---------------------------------------------------------------------------------------
+@リサージュ曲線
+--track0:a,-1000,1000,3,0.01
+--track1:b,-1000,1000,4,0.01
+--track2:size,-1000,1000,100,0.01
+--track3:delta,-1000,1000,0
+--dialog:size*,local siz=1;slide+,local sli=0;slide*,local bai=obj.time;
+local aa=obj.track0*obj.track2*siz
+local bb=obj.track1*obj.track2*siz
+local sita=2*math.pi/obj.num*(obj.index+sli*bai)
+obj.ox=aa*math.sin(aa*sita+obj.track3)
+obj.oy=bb*math.sin(bb*sita)
+----------------------------------------------------------------------------------------
+@正葉曲線
+--track0:n,-1000,1000,3,0.01
+--track1:d,-1000,1000,1,0.01
+--track2:size,-1000,1000,100,0.01
+--track3:slide,-1000,1000,0
+--dialog:size*,local siz=1;slide*,local bai=1;
+local aa=obj.track0/obj.track1
+local sita=2*math.pi/obj.num*(obj.index+obj.track3*bai)
+obj.ox=math.sin(aa*sita)*math.cos(sita)*obj.track2*siz
+obj.oy=math.sin(aa*sita)*math.sin(sita)*obj.track2*siz
+--------------------------------------------------------------------------------------
+@正多角形
+--track0:n,-1000,1000,3,0.01
+--track1:θ,0,3600,3600,0.01
+--track2:size,-1000,1000,100,0.01
+--track3:slide,-1000,1000,0,0.01
+--dialog:size*,local siz=1;slide*,local bai=1;
+local n=obj.track0
+local an=2*math.pi/n
+local sita=2*math.pi/obj.num*(obj.index+obj.track3*bai)*obj.track1/3600
+obj.ox=math.cos(sita)*math.cos(an/2)/math.cos(an*(sita/an-math.floor(sita/an))-an/2)*obj.track2*siz
+obj.oy=math.sin(sita)*math.cos(an/2)/math.cos(an*(sita/an-math.floor(sita/an))-an/2)*obj.track2*siz
+-----------------------------------------------------------------------------------------
+@複数半径
+--track0:ra,-1000,1000,50,0.01
+--track1:rb,-1000,1000,10,0.01
+--track2:size*,-1000,1000,1,0.01
+--track3:n,-1000,1000,5,0.01
+local n=obj.track3
+local l=obj.track0+obj.track1*math.floor(obj.index/n)
+local r=2*math.pi/n*obj.index
+obj.ox=math.sin(r)*l*obj.track2
+obj.oy=-math.cos(r)*l*obj.track2
+-------------------------------------------------------------------------------------
+@うずまき
+--track0:distance,-1000,1000,10,0.01
+--track1:size1,-1000,1000,100,0.01
+--track2:size2,-1000,1000,100,0.01
+--track3:slide,-1000,1000,0,0.01
+--dialog:size*,local siz={1,1};slide*,local bai=1;
+local xx=obj.track0*(obj.index+obj.track3*bai)
+obj.ox=xx
+obj.oy=math.sin(xx)*obj.track1*siz[1]
+obj.oz=math.cos(xx)*obj.track2*siz[2]
+------------------------------------------------------------------------------------
+@座標回転
+--track0:RX,-1000,1000,0,0.01
+--track1:RY,-1000,1000,0,0.01
+--track2:RZ,-1000,1000,0,0.01
+--track3:seed,0,90000,0,1
+--check0:座標シャッフル,0
+--dialog:xyz*,local bai={1,1,1};シャッフル座標,local aa=nil;
+
+--x(テツさんのをぱくり、改変)
+local x=obj.ox
+local y=obj.oy
+local z=obj.oz
+local angle=math.rad(obj.track0*bai[1])
+local x2=x
+local y2=y*math.cos(angle)-z*math.sin(angle)
+local z2=y*math.sin(angle)+z*math.cos(angle)
+obj.ox=x2
+obj.oy=y2
+obj.oz=z2
+
+--y(テツさんのをぱくり、改変)
+x=obj.ox
+y=obj.oy
+z=obj.oz
+angle=math.rad(obj.track1*bai[2])
+x2=x*math.cos(angle)+z*math.sin(angle)
+y2=y
+z2=-x*math.sin(angle)+z*math.cos(angle)
+obj.ox=x2
+obj.oy=y2
+obj.oz=z2
+
+--z(テツさんのをぱくり、改変)
+x=obj.ox
+y=obj.oy
+z=obj.oz
+angle=math.rad(obj.track2*bai[3])
+x2=x*math.cos(angle)-y*math.sin(angle)
+y2=x*math.sin(angle)+y*math.cos(angle)
+z2=z
+obj.ox=x2
+obj.oy=y2
+obj.oz=z2
+
+--配列シャッフル(ゆうきさんのをぱくり、改変)
+if(obj.check0)then
+local indexes = {}
+for i=0,obj.num-1 do
+  indexes[i+1]=i
+end
+for i=0,obj.num-1 do
+  local dest = 0
+  dest=rand(0,obj.num-1,-1-obj.track3,i+1)
+  local swap      = indexes[i+1]
+  indexes[i+1]    = indexes[dest+1]
+  indexes[dest+1] = swap
+end
+i=indexes[obj.index+1]
+obj.ox=aa[i*3+1]
+obj.oy=aa[i*3+2]
+obj.oz=aa[i*3+3]
+end
+--------------------------------------------------------------------------------------

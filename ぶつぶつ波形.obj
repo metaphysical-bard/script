@@ -7,10 +7,11 @@
 --track1:最小制限,0,10000,10
 --track2:最大制限,0,10000,30
 --track3:列幅,0,10000,50
---dialog:列数,retu=5;列個数,kosu=5;音／,tyu=100;緩やかさ,yuru=50;色相音対応/chk,zyu=0;音分割数,div=1;波長指定,hatyo=1;色/col,col=0xff;
+--dialog:列数,local retu=5;列個数,local kosu=5;音／,local tyu=100;緩やかさ,local yuru=50;色相音対応/chk,local zyu=0;音分割数,local div=1;波長指定,local hatyo=1;色/col,local col=0xff;
 
-buf={}
-b=obj.getaudio(buf,"audiobuffer","spectrum",div)
+local c,l,n,i,r,x,y,size,siki=0,0,0,0,0,0,0,0,0
+local buf={}
+local b=obj.getaudio(buf,"audiobuffer","spectrum",div)
 
 for c=0,retu do
 l=c*obj.track3

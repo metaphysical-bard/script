@@ -1,0 +1,110 @@
+@X,Y,Z,Šg‘å—¦
+--track0:X,-10000,10000,0
+--track1:Y,-10000,10000,0
+--track2:Z,-10000,10000,0
+--track3:Šg‘å—¦,0,5000,100,0.01
+--dialog:”Ô†Žw’è,local a={nil};
+for i=0,#a do
+ if(obj.index==a[i])then
+  obj.ox=obj.ox+obj.track0
+  obj.oy=obj.oy+obj.track1
+  obj.oz=obj.oz+obj.track2
+  obj.zoom=obj.track3/100
+ end
+end
+
+@XŽ²‰ñ“],YŽ²‰ñ“],ZŽ²‰ñ“],“§–¾“x
+--track0:XŽ²‰ñ“],-3600,3600,0,0.01
+--track1:YŽ²‰ñ“],-3600,3600,0,0.01
+--track2:ZŽ²‰ñ“],-3600,3600,0,0.01
+--track3:“§–¾“x,0,100,0
+--dialog:”Ô†Žw’è,local a={nil};
+for i=0,#a do
+ if(obj.index==a[i])then
+  obj.rx=obj.rx+obj.track0
+  obj.ry=obj.ry+obj.track1
+  obj.rz=obj.rz+obj.track2
+  obj.alpha=1-obj.track3/100
+ end
+end
+
+@’†SX,’†SY,’†SZ,c‰¡”ä
+--track0:’†SX,-2000,2000,0
+--track1:’†SY,-2000,2000,0
+--track2:’†SZ,-2000,2000,0
+--track3:c‰¡”ä,-100,100,0
+--dialog:”Ô†Žw’è,local a={nil};
+for i=0,#a do
+ if(obj.index==a[i])then
+  obj.cx=obj.rx+obj.track0
+  obj.cy=obj.ry+obj.track1
+  obj.cz=obj.rz+obj.track2
+  obj.aspect=obj.track3/100
+ end
+end
+
+@ŒÂ•ÊˆÚ“®
+--track0:Œ`‘Ô,-1000,1000,0,0.01
+--track1:‚¸‚ê,-1000,1000,0,0.01
+--track2:ƒ‰ƒ“ƒ_ƒ€,-1000,1000,0,0.01
+--track3:‚¸‚ê•û,0,2,1,1
+--check0:‹t,1
+--dialog:1,local aira={aa[1],aa[2],aa[3],aa[4]};‚¸‚ê’Ç‰Á,local aad=0;‚¸‚ê*,local zu=1;ƒ‰ƒ“ƒ_ƒ€*,local ka=1;•ªŠ„”,local bun=1000;seed,local sed=-1;
+
+local xx=0
+local yy=0
+local zz=0
+local jj=0
+obj.ox=0
+obj.oy=0
+obj.oz=0
+
+if(obj.track3==1 and obj.check0)then
+	jj=obj.index
+elseif(obj.track3==1)then
+	jj=obj.num-1-obj.index
+elseif(obj.track3==2 and obj.check0)then
+	if((obj.num-1)/2>=obj.index)then
+	jj=obj.index*2
+	else
+	jj=(obj.num-1-obj.index)*2
+	end
+elseif(obj.track3==2)then
+	if((obj.num-1)/2>=obj.index)then
+	jj=obj.num-1-obj.index*2
+	else
+	jj=obj.num-1-(obj.num-1-obj.index)*2
+	end
+else
+	jj=0
+end
+
+local ovg=(obj.track0+obj.track1/100*(jj+aad)*zu+obj.rand(0,bun,sed-obj.index,1)/100*obj.track2*ka)/100
+local ii_0=math.floor(ovg)
+local ii_1=ii_0+1
+local ii_2=ii_0+2
+local ii_3=ii_0+3
+local xi=obj.index*3+1
+local yi=obj.index*3+2
+local zi=obj.index*3+3
+
+if(ii_0<=0)then
+	ii_0=1
+	ii_1=2
+	ii_2=3
+	ii_3=4
+	ovg=ovg-1
+elseif(ii_3>#aira)then
+	ii_0=#aira-3
+	ii_1=ii_0+1
+	ii_2=ii_0+2
+	ii_3=ii_0+3
+	ovg=ovg-ii_0
+else
+	ovg=ovg%1
+end
+
+xx,yy,zz=obj.interpolation(ovg,aira[ii_0][xi],aira[ii_0][yi],aira[ii_0][zi],aira[ii_1][xi],aira[ii_1][yi],aira[ii_1][zi],aira[ii_2][xi],aira[ii_2][yi],aira[ii_2][zi],aira[ii_3][xi],aira[ii_3][yi],aira[ii_3][zi])
+obj.ox=xx
+obj.oy=yy
+obj.oz=zz

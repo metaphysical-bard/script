@@ -1,28 +1,28 @@
 --track0:範囲,0,10000,100,0.01
 --track1:強度,0,10000,20,0.1
---track2:高さ,-10000,3000,0,0.1
+--track2:高さ,-10000,10000,0,0.1
 --track3:乱数,1,1000,1,1
 --check0:色ずれ,0
---dialog:ずれ幅,zure=5;角度,kakudo=0;強さ,tuyosa=100;type,taipu=0;
+--dialog:ずれ幅,local zure=5;角度,local kakudo=0;強さ,local tuyosa=100;type,local taipu=0;
 
 --範囲、高さ
-haba = obj.h / 2 - obj.track0 / 2
-habani = obj.h / 2
+local haba = obj.h / 2 - obj.track0 / 2
+local habani = obj.h / 2
 
-sanban = obj.track3
-sanbanni = sanban + 1000
-rannsu = rand(habani,haba,sanban)
-rannsuni = rand(habani,haba,sanbanni)
-kezu = rannsu - obj.track2
-kezuni = rannsuni + obj.track2
+local sanban = obj.track3
+local sanbanni = sanban + 1000
+local rannsu = rand(habani,haba,sanban)
+local rannsuni = rand(habani,haba,sanbanni)
+local kezu = rannsu - obj.track2
+local kezuni = rannsuni + obj.track2
 obj.effect("クリッピング","上",kezu,"下",kezuni)
 
 
 --強度
-sanbansan = sanban + 2000
-syousai = obj.track1
-syousaini = -1 * syousai
-rannsusan = rand(syousaini,syousai,sanbansan)
+local sanbansan = sanban + 2000
+local syousai = obj.track1
+local syousaini = -1 * syousai
+local rannsusan = rand(syousaini,syousai,sanbansan)
 obj.ox = rannsusan
 
 --色ずれ
