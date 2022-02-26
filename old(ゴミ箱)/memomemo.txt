@@ -1,0 +1,336 @@
+--[[
+
+スクリプト制御用のやつらです。
+lua言語できる人は、スクリプトを使うよりもこっちを使ったほうがいいかも。
+
+]]
+-----------------------------------------indexのシャッフル(ゆうきさんのソース)
+---順番通りの配列を定義する
+local indexes = {}
+for i=0,obj.num-1 do
+  indexes[i+1]=i
+end
+
+---配列をシャッフルする
+for i=0,obj.num-1 do
+  local dest = 0
+  dest=rand(0,obj.num-1, (obj.num+1)*(-1),i+1)   --obj共通のランダム値を得るためにシードは負の値を使う、とのこと
+  local swap      = indexes[i+1]
+  indexes[i+1]    = indexes[dest+1]
+  indexes[dest+1] = swap
+end
+i=indexes[obj.index+1]
+--------------------------------------------------------
+--ここからはobjを並べるようのやつら。個別オブジェクト用のやつもあり。
+--円配列
+l=200
+r=360/obj.num*obj.index
+obj.ox=math.sin(r*math.pi/180)*l
+obj.oy=-math.cos(r*math.pi/180)*l
+obj.rz=obj.rz+r
+
+--うずまき
+for i=0,10000 do
+xx=0.01*i
+yy=math.sin(xx)
+zz=math.cos(xx)*100
+obj.draw(xx*10,yy*100,zz)
+end
+
+--幕みたいな？
+xx=-500
+yy=-500
+for j=0,10 do
+yy=yy+j*obj.time*10
+for i=0,10 do
+obj.draw(xx+i*100,yy)
+end
+end
+
+--綺麗に整列
+xx=-500
+yy=-300
+for j=0,5 do
+yy=yy+100
+for i=0,10 do
+obj.draw(xx+i*100,yy)
+end
+end
+
+--きっと何かのやくにたつ
+obj.ox=0
+obj.oy=0
+xx=0
+yy=0
+aa=100*obj.time
+bb=10
+for i=0,obj.num-1 do
+if(obj.index==i)then
+sita=2*math.pi/obj.num*obj.index
+xx=(aa-bb)*math.cos(sita)+bb*math.cos((aa-bb)/1*sita)
+yy=(aa-1)*math.sin(sita)+1*math.sin((aa-bb)/bb*sita)
+obj.draw(obj.ox+xx,obj.oy+yy)
+end
+end
+
+--ハイポサイクロイド
+obj.ox=0
+obj.oy=0
+xx=0
+yy=0
+aa=120
+bb=10
+for i=0,obj.num-1 do
+if(obj.index==i)then
+sita=2*math.pi/obj.num*obj.index
+xx=(aa-bb)*math.cos(sita)+bb*math.cos((bb-aa)/bb*sita)
+yy=(aa-bb)*math.sin(sita)+bb*math.sin((bb-aa)/bb*sita)
+obj.draw(obj.ox+xx,obj.oy+yy)
+end
+end
+
+--うずまきまき
+obj.ox=0
+obj.oy=0
+aa=10
+for i=0,obj.num-1 do
+if(obj.index==i)then
+sita=30/obj.num*obj.index
+obj.ox=aa*sita*math.cos(sita)
+obj.oy=aa*sita*math.sin(sita)
+end
+end
+]]
+---------------------------------------------------
+--個別オブジェクト用の座標取得。aに個別オブジェクトのすべての座標が入る。
+a={}
+a[obj.index*3+1]=obj.ox
+a[obj.index*3+2]=obj.oy
+a[obj.index*3+3]=obj.oz
+----------------------------------------------------
+--aの読み取り。
+aa={}
+aa=a
+obj.ox=aa[obj.index*3+1]
+obj.oy=aa[obj.index*3+2]
+obj.oz=aa[obj.index*3+3]
+----------------------------------------------------------------
+--ここからは面の作成。aに任意の座標を代入して使用する。
+--四角形にスクリプト制御を付けて使用。
+0　何もなし。
+1　四角形で描画。形が崩れる。
+2　三角形で描画。
+3　ランダムに描画。
+4　三辺の長さの平均で指定。
+5　面積で指定。
+6　番号指定して描画。
+7　ランダムに描画。数指定あり。
+------------------------------mode0-----------------------------
+------------------------------mode1-----------------------------
+a=GVA["o".."3D"]
+for i=0,#a/3-4 do
+b_1=3*i+1
+b_2=b_1+3
+b_3=b_2+3
+b_4=b_3+3
+obj.drawpoly(a[b_1],a[b_1+1],a[b_1+2],
+		 a[b_2],a[b_2+1],a[b_2+2],
+		 a[b_3],a[b_3+1],a[b_3+2],
+		 a[b_4],a[b_4+1],a[b_4+2])
+end
+b_1=#a-3*3+1
+b_2=#a-2*3+1
+b_3=#a-1*3+1
+b_4=0*3+1
+obj.drawpoly(a[b_1],a[b_1+1],a[b_1+2],
+		 a[b_2],a[b_2+1],a[b_2+2],
+		 a[b_3],a[b_3+1],a[b_3+2],
+		 a[b_4],a[b_4+1],a[b_4+2])
+b_1=#a-2*3+1
+b_2=#a-1*3+1
+b_3=0*3+1
+b_4=1*3+1
+obj.drawpoly(a[b_1],a[b_1+1],a[b_1+2],
+		 a[b_2],a[b_2+1],a[b_2+2],
+		 a[b_3],a[b_3+1],a[b_3+2],
+		 a[b_4],a[b_4+1],a[b_4+2])
+b_1=#a-1*3+1
+b_2=0*3+1
+b_3=1*3+1
+b_4=2*3+1
+obj.drawpoly(a[b_1],a[b_1+1],a[b_1+2],
+		 a[b_2],a[b_2+1],a[b_2+2],
+		 a[b_3],a[b_3+1],a[b_3+2],
+		 a[b_4],a[b_4+1],a[b_4+2])
+--------------------------------mode2---------------------------------
+a=GVA["o".."3D"]
+for i=0,#a/3-3 do
+b_1=3*i+1
+b_2=b_1+3
+b_3=b_2+3
+obj.drawpoly(a[b_1],a[b_1+1],a[b_1+2],
+		 a[b_2],a[b_2+1],a[b_2+2],
+		 a[b_3],a[b_3+1],a[b_3+2],
+		 a[b_3],a[b_3+1],a[b_3+2])
+end
+b_1=#a-2*3+1
+b_2=#a-1*3+1
+b_3=0*3+1
+obj.drawpoly(a[b_1],a[b_1+1],a[b_1+2],
+		 a[b_2],a[b_2+1],a[b_2+2],
+		 a[b_3],a[b_3+1],a[b_3+2],
+		 a[b_3],a[b_3+1],a[b_3+2])
+b_1=#a-1*3+1
+b_2=0*3+1
+b_3=1*3+1
+obj.drawpoly(a[b_1],a[b_1+1],a[b_1+2],
+		 a[b_2],a[b_2+1],a[b_2+2],
+		 a[b_3],a[b_3+1],a[b_3+2],
+		 a[b_3],a[b_3+1],a[b_3+2])
+---------------------------------mode3----------------------------------
+b=R_NEST("o")
+a={}
+c={}
+for i=1,#b/3 do
+c[i]=i
+end
+---------シャッフル---------
+for i=0,#c-1 do
+	z=obj.rand(0,#c-1,-1*i,1)
+	t=c[i+1]
+	c[i+1]=c[z+1]
+	c[z+1]=t
+end
+----------------------------
+for i=1,#b/3 do
+a[(i)*3-2]=b[c[i]*3-2]
+a[(i)*3-1]=b[c[i]*3-1]
+a[(i)*3]=b[c[i]*3]
+end
+for i=0,#a/3-3 do
+b_1=3*i+1
+b_2=b_1+3
+b_3=b_2+3
+obj.drawpoly(a[b_1],a[b_1+1],a[b_1+2],
+		 a[b_2],a[b_2+1],a[b_2+2],
+		 a[b_3],a[b_3+1],a[b_3+2],
+		 a[b_3],a[b_3+1],a[b_3+2])
+end
+b_1=#a-2*3+1
+b_2=#a-1*3+1
+b_3=0*3+1
+obj.drawpoly(a[b_1],a[b_1+1],a[b_1+2],
+		 a[b_2],a[b_2+1],a[b_2+2],
+		 a[b_3],a[b_3+1],a[b_3+2],
+		 a[b_3],a[b_3+1],a[b_3+2])
+b_1=#a-1*3+1
+b_2=0*3+1
+b_3=1*3+1
+obj.drawpoly(a[b_1],a[b_1+1],a[b_1+2],
+		 a[b_2],a[b_2+1],a[b_2+2],
+		 a[b_3],a[b_3+1],a[b_3+2],
+		 a[b_3],a[b_3+1],a[b_3+2])
+-----------------------------------mode4------------------------------
+--((x_1-x_2)^2+(y_1-y_2)^2+(z_1-z_2)^2)^0.5--二地点間の距離
+a=GVA["o".."3D"]
+saidai=100
+saisyo=0
+---------三角形を描画する関数-----------
+local function sankaku(a_1,a_2,a_3)
+b_1=a_1*3+1
+b_2=a_2*3+1
+b_3=a_3*3+1
+obj.drawpoly(a[b_1],a[b_1+1],a[b_1+2],
+		 a[b_2],a[b_2+1],a[b_2+2],
+		 a[b_3],a[b_3+1],a[b_3+2],
+		 a[b_3],a[b_3+1],a[b_3+2])
+end
+----------------------------------------
+for i=0,#a/3-1 do
+for j=0,#a/3-1 do
+for f=0,#a/3-1 do
+	if(i==j or i==f or f==j)then
+	d=saidai+1
+	else
+	d_1=((a[i*3+1]-a[j*3+1])^2+(a[i*3+2]-a[j*3+2])^2+(a[i*3+3]-a[j*3+3])^2)^0.5
+	d_2=((a[i*3+1]-a[f*3+1])^2+(a[i*3+2]-a[f*3+2])^2+(a[i*3+3]-a[f*3+3])^2)^0.5
+	d_3=((a[f*3+1]-a[j*3+1])^2+(a[f*3+2]-a[j*3+2])^2+(a[f*3+3]-a[j*3+3])^2)^0.5
+	d=(d_1+d_2+d_3)/3
+	end
+	if(d<saidai and d>saisyo)then
+	sankaku(i,j,f)
+	end
+end
+end
+end
+----------------------------------mode5----------------------------
+a=GVA["o".."3D"]
+saidai=100000
+saisyo=0
+---------三角形を描画する関数-----------
+local function sankaku(a_1,a_2,a_3)
+b_1=a_1*3+1
+b_2=a_2*3+1
+b_3=a_3*3+1
+obj.drawpoly(a[b_1],a[b_1+1],a[b_1+2],
+		 a[b_2],a[b_2+1],a[b_2+2],
+		 a[b_3],a[b_3+1],a[b_3+2],
+		 a[b_3],a[b_3+1],a[b_3+2])
+end
+----------------------------------------
+for i=0,#a/3-1 do
+for j=0,#a/3-1 do
+for f=0,#a/3-1 do
+	if(i==j or i==f or f==j)then
+	d=saidai+1
+	else
+	d_1=((a[i*3+1]-a[j*3+1])^2+(a[i*3+2]-a[j*3+2])^2+(a[i*3+3]-a[j*3+3])^2)^0.5
+	d_2=((a[i*3+1]-a[f*3+1])^2+(a[i*3+2]-a[f*3+2])^2+(a[i*3+3]-a[f*3+3])^2)^0.5
+	d_3=((a[f*3+1]-a[j*3+1])^2+(a[f*3+2]-a[j*3+2])^2+(a[f*3+3]-a[j*3+3])^2)^0.5
+	s=(d_1+d_2+d_3)/2
+	d=(s*(s-d_1)*(s-d_2)*(s-d_3))^0.5
+	end
+	if(d<saidai and d>saisyo)then
+	sankaku(i,j,f)
+	end
+end
+end
+end
+-----------------------------------mode6---------------------------
+a=GVA["o".."3D"]
+---------三角形を描画する関数-----------
+local function sankaku(a_1,a_2,a_3)
+b_1=a_1*3+1
+b_2=a_2*3+1
+b_3=a_3*3+1
+obj.drawpoly(a[b_1],a[b_1+1],a[b_1+2],
+		 a[b_2],a[b_2+1],a[b_2+2],
+		 a[b_3],a[b_3+1],a[b_3+2],
+		 a[b_3],a[b_3+1],a[b_3+2])
+end
+----------------------------------------
+sankaku(0,1,2)
+------------------------------------mode7----------------------------
+a=GVA["o".."3D"]
+kazu=10
+j=0
+---------三角形を描画する関数-----------
+local function sankaku(a_1,a_2,a_3)
+b_1=a_1*3+1
+b_2=a_2*3+1
+b_3=a_3*3+1
+obj.drawpoly(a[b_1],a[b_1+1],a[b_1+2],
+		 a[b_2],a[b_2+1],a[b_2+2],
+		 a[b_3],a[b_3+1],a[b_3+2],
+		 a[b_3],a[b_3+1],a[b_3+2])
+end
+----------------------------------------
+for i=0,kazu-1 do
+repeat
+j=j+1
+ra_1=obj.rand(0,#a/3-1,-1*j,1)
+ra_2=obj.rand(0,#a/3-1,-1*j,2)
+ra_3=obj.rand(0,#a/3-1,-1*j,3)
+until ra_1~=ra_2 or ra_1~=ra_3 or ra_2~=ra_3
+sankaku(ra_1,ra_2,ra_3)
+end
