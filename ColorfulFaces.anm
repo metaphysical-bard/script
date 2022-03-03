@@ -133,8 +133,8 @@ for f=0,#a/3-1 do
 	d_3=((a[f*3+1]-a[j*3+1])^2+(a[f*3+2]-a[j*3+2])^2+(a[f*3+3]-a[j*3+3])^2)^0.5
 	d=(d_1+d_2+d_3)/3
 	end
-	if(d<saidai and d>saisyo)then
 	count=set_effect(i,j,f,count)
+	if(d<saidai and d>saisyo)then
 	set_alpha(d)
 	sankaku(i,j,f)
 	end
