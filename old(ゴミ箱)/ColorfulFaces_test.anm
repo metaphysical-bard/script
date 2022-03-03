@@ -1,0 +1,392 @@
+--[[ColorfulFaces_test.anm
+
+参考座標をもとに、三角形や四角形を描画します。
+参考座標は、93さんの座標格納スクリプトを用いると便利です。
+
+
+////解説////
+
+alpha
+	透明度をランダムにさせます。
+	オブジェクトの透明度より不透明にはなりません。
+
+color
+	色をランダムにさせます。
+	スクリプト名の由来でもありますが、上手く機能してくれなかったり。
+	はい、僕の努力不足です、まじすまん。m(_ _;)m
+
+min
+	mode4,mode5のときに、角形を作る基準の最小値を決めます。
+	maxよりも小さい数にしてください。
+
+max
+	mode4,mode5のときに、角形を作る基準の最大値を決めます。
+
+参考座標
+	複数の座標を打ち込んで下さい。
+
+mode0~7
+	角形を描画する際のアルゴリズムを指定できます。
+	0　何もなし。もとのオブジェクトがそのまま描画されます。
+	1　四角形で描画。形が崩れる。座標の数だけ描画される。
+	2　三角形で描画。座標の数だけ描画される。
+	3　ランダムに三角形を描画。座標の数だけ描画される。
+	4　三角形を描画。三辺の長さの平均で指定。
+	5　三角形を描画。面積で指定。
+	6　番号指定して三角形を描画。
+	7　ランダムに三角形を描画。数指定可。重複あり。
+
+AddSet
+	追加設定です。
+	{0,10,100,2000}のように入力してください。
+
+	AddSet[1]
+		0 元画像を基準に色ランダム。
+		1 前描画をもとに色ランダム。
+		2 前描画をもとに乱数統一。
+	AddSet[2]
+		mode7のときに、描画される角形の数。
+	AddSet[3]
+		mode4,mode5のときにフェードを始める数値です。機能しませんが。
+	AddSet[4]
+		mode4,mode5のときにフェードを始める数値です。機能しませんが。
+
+mode6set
+	mode6用です。mode6以外でも適用されますが…。
+	{0,1,2}のように指定すると分かりやすいと思います。
+
+color*
+	colorの影響度を決めれます。
+	{0,0,1,0,1,0}のように入力してください。
+
+	color*[1]
+		明るさの影響度です。
+	color*[2]
+		コントラストの影響度です。
+	color*[3]
+		色相の影響度です。
+	color*[4]
+		輝度の影響度です。
+	color*[5]
+		彩度の影響度です。
+	color*[6]
+		飽和するかしないかを決めれます。
+		0か1で指定してください。
+
+seed
+	乱数の値を変化させることができます。
+	{1,2,3}のように入力してください。
+
+	seed[1]
+		透明度の乱数のシード値です。
+	seed[2]
+		colorの乱数のシード値です。
+	seed[3]
+		mode3やmode7の乱数のシード値です。
+		自然数で入力してください。
+
+//////////////////////////////////////////////////////
+
+エラーやバグ報告はツイッターとかにお願いします。
+https://twitter.com/metaphysicalba1
+
+//////////////////////////////////////////////////////
+
+]]
+
+
+
+--track0:alpha,0,100,0,0.01
+--track1:color,-100,100,0,0.01
+--track2:min,0,10000,0,0.01
+--track3:max,0,10000,200,0.01
+--dialog:参考座標,local a=R_NEST("A");mode0~7,local mode=2;AddSet,local addset={2,10,100,100};mode6set,local set_6={};color*,local iro={0,0,1,0,0,0};seed>0,local ransu={1,2,3};
+
+
+
+--変数処理--
+local count=1			--seedを変化させるための変数。
+local syoki_alpha=obj.alpha	--初期alpha値の保存。
+local d,saidai,saisyo		--mode4,mode5ようの変数。
+if(mode==4)then
+saidai=obj.track3
+saisyo=obj.track2
+elseif(mode==5)then
+saidai=obj.track3*100
+saisyo=obj.track2*100
+else
+mode_0=nil
+end
+
+
+
+--三角形を描画する関数--
+local function sankaku(a_1,a_2,a_3)
+local b_1=a_1*3+1
+local b_2=a_2*3+1
+local b_3=a_3*3+1
+obj.effect()
+obj.drawpoly(a[b_1],a[b_1+1],a[b_1+2],
+		 a[b_2],a[b_2+1],a[b_2+2],
+		 a[b_3],a[b_3+1],a[b_3+2],
+		 a[b_3],a[b_3+1],a[b_3+2])
+end
+
+
+
+--四角形を描画する関数--
+local function sikaku(a_1,a_2,a_3,a_4)
+local b_1=a_1*3+1
+local b_2=a_2*3+1
+local b_3=a_3*3+1
+local b_4=a_4*3+1
+obj.effect()
+obj.drawpoly(a[b_1],a[b_1+1],a[b_1+2],
+		 a[b_2],a[b_2+1],a[b_2+2],
+		 a[b_3],a[b_3+1],a[b_3+2],
+		 a[b_4],a[b_4+1],a[b_4+2])
+end
+
+
+
+--色関係の関数--
+local function iro_effect(count)
+
+if(addset[1]==1)then
+local c_1=obj.track1*iro[1]*obj.rand(-1000,1000,ransu[2],count)/1000
+local c_2=obj.track1*iro[2]*obj.rand(-1000,1000,ransu[2]+10,count)/1000
+local c_3=obj.track1*iro[3]*obj.rand(-1000,1000,ransu[2]+20,count)/1000
+local c_4=obj.track1*iro[4]*obj.rand(-1000,1000,ransu[2]+30,count)/1000
+local c_5=obj.track1*iro[5]*obj.rand(-1000,1000,ransu[2]+40,count)/1000
+obj.effect("色調補正","明るさ",100+c_1,"ｺﾝﾄﾗｽﾄ",100+c_2,"色相",c_3,"輝度",100+c_4,"彩度",100+c_5,"飽和する",iro[6])
+elseif(addset[1]==2)then
+local c_1=obj.track1*iro[1]*obj.rand(-1000,1000,ransu[2],1)/1000
+local c_2=obj.track1*iro[2]*obj.rand(-1000,1000,ransu[2]+10,1)/1000
+local c_3=obj.track1*iro[3]*obj.rand(-1000,1000,ransu[2]+20,1)/1000
+local c_4=obj.track1*iro[4]*obj.rand(-1000,1000,ransu[2]+30,1)/1000
+local c_5=obj.track1*iro[5]*obj.rand(-1000,1000,ransu[2]+40,1)/1000
+obj.effect("色調補正","明るさ",100+c_1,"ｺﾝﾄﾗｽﾄ",100+c_2,"色相",c_3,"輝度",100+c_4,"彩度",100+c_5,"飽和する",iro[6])
+else
+local c_1=obj.track1*iro[1]*obj.rand(-1000,1000,ransu[2],count)/1000
+local c_2=obj.track1*iro[2]*obj.rand(-1000,1000,ransu[2]+10,count)/1000
+local c_3=obj.track1*iro[3]*obj.rand(-1000,1000,ransu[2]+20,count)/1000
+local c_4=obj.track1*iro[4]*obj.rand(-1000,1000,ransu[2]+30,count)/1000
+local c_5=obj.track1*iro[5]*obj.rand(-1000,1000,ransu[2]+40,count)/1000
+local d_1=obj.track1*iro[1]*obj.rand(-1000,1000,ransu[2],count-1)/1000
+local d_2=obj.track1*iro[2]*obj.rand(-1000,1000,ransu[2]+10,count-1)/1000
+local d_3=obj.track1*iro[3]*obj.rand(-1000,1000,ransu[2]+20,count-1)/1000
+local d_4=obj.track1*iro[4]*obj.rand(-1000,1000,ransu[2]+30,count-1)/1000
+local d_5=obj.track1*iro[5]*obj.rand(-1000,1000,ransu[2]+40,count-1)/1000
+obj.effect("色調補正","明るさ",100+c_1-d_1,"ｺﾝﾄﾗｽﾄ",100+c_2-d_2,"色相",c_3-d_3,"輝度",100+c_4-d_4,"彩度",100+c_5-d_5,"飽和する",iro[6])
+end
+
+local ransu_alpha=obj.rand(0,1000,ransu[1],count)/1000
+local ransu_alpha2=(syoki_alpha-ransu_alpha)/100*obj.track0
+local ransu_alpha3=obj.rand(0,1000,ransu[1],count-1)/1000
+local ransu_alpha4=(syoki_alpha-ransu_alpha3)/100*obj.track0
+if(mode==4 or mode==5)then
+	if(d<saisyo-addset[3])then
+	obj.alpha=(obj.alpha+ransu_alpha2-ransu_alpha4)*(d-(saisyo-addset[3]))/addset[3]
+	esleif(d>saidai-addset[4])then
+	obj.alpha=(obj.alpha+ransu_alpha2-ransu_alpha4)*(d-(saidai-addset[4]))/addset[4]
+	else
+	obj.alpha=obj.alpha+ransu_alpha2-ransu_alpha4
+	end
+else
+	obj.alpha=obj.alpha+ransu_alpha2-ransu_alpha4
+end
+
+count=count+1
+return count
+
+end
+
+
+
+--mode1の関数--
+local function mode_1()
+
+for i=0,#a/3-4 do
+count=iro_effect(count)
+sikaku(i,i+1,i+2,i+3)
+end
+count=iro_effect(count)
+sikaku(#a/3-3,#a/3-2,#a/3-1,0)
+count=iro_effect(count)
+sikaku(#a/3-2,#a/3-1,0,1)
+count=iro_effect(count)
+sikaku(#a/3-1,0,1,2)
+
+end
+
+
+
+--mode2の関数--
+local function mode_2()
+
+for i=0,#a/3-3 do
+count=iro_effect(count)
+sankaku(i,i+1,i+2)
+end
+count=iro_effect(count)
+sankaku(#a/3-2,#a/3-1,0)
+count=iro_effect(count)
+sankaku(#a/3-1,0,1)
+
+end
+
+
+
+--mode3の関数--
+local function mode_3()--mode3は、アルゴリズムよくわからん…
+
+local c={}
+local i,z,t
+for i=0,#a/3-1 do
+c[i+1]=i
+end
+for i=0,#a/3-1 do
+z=obj.rand(1,#a/3-i,-1-ransu[3],i+1)
+t=c[z]
+c[z]=c[i+1]
+c[i+1]=t
+end
+for i=0,#a/3-4 do
+count=iro_effect(count)
+sankaku(c[i+1],c[i+2],c[i+3])
+end
+count=iro_effect(count)
+sankaku(c[#c-1],c[#c],c[1])
+count=iro_effect(count)
+sankaku(c[#c],c[1],c[2])
+
+end
+
+
+
+--mode4の関数--
+local function mode_4()
+
+local i,j,f,d_1,d_2,d_3
+for i=0,#a/3-1 do
+for j=0,#a/3-1 do
+for f=0,#a/3-1 do
+	if(i==j or i==f or f==j)then
+	d=saidai+1
+	else
+	d_1=((a[i*3+1]-a[j*3+1])^2+(a[i*3+2]-a[j*3+2])^2+(a[i*3+3]-a[j*3+3])^2)^0.5
+	d_2=((a[i*3+1]-a[f*3+1])^2+(a[i*3+2]-a[f*3+2])^2+(a[i*3+3]-a[f*3+3])^2)^0.5
+	d_3=((a[f*3+1]-a[j*3+1])^2+(a[f*3+2]-a[j*3+2])^2+(a[f*3+3]-a[j*3+3])^2)^0.5
+	d=(d_1+d_2+d_3)/3
+	end
+	if(d<saidai and d>saisyo)then
+	count=iro_effect(count)
+	sankaku(i,j,f)
+	end
+end
+end
+end
+
+end
+
+
+
+--mode5の関数--
+local function mode_5()
+
+local i,j,f,d_1,d_2,d_3,s
+for i=0,#a/3-1 do
+for j=0,#a/3-1 do
+for f=0,#a/3-1 do
+	if(i==j or i==f or f==j)then
+	d=saidai+1
+	else
+	d_1=((a[i*3+1]-a[j*3+1])^2+(a[i*3+2]-a[j*3+2])^2+(a[i*3+3]-a[j*3+3])^2)^0.5
+	d_2=((a[i*3+1]-a[f*3+1])^2+(a[i*3+2]-a[f*3+2])^2+(a[i*3+3]-a[f*3+3])^2)^0.5
+	d_3=((a[f*3+1]-a[j*3+1])^2+(a[f*3+2]-a[j*3+2])^2+(a[f*3+3]-a[j*3+3])^2)^0.5
+	s=(d_1+d_2+d_3)/2
+	d=(s*(s-d_1)*(s-d_2)*(s-d_3))^0.5
+	end
+	if(d<saidai and d>saisyo)then
+	count=iro_effect(count)
+	sankaku(i,j,f)
+	end
+end
+end
+end
+
+end
+
+
+
+--mode6の関数--
+local function mode_6()
+
+local i
+if(set_6~=0 or #set_6/3~=1 or #set_6/3~=2)then
+for i=0,#set_6/3-1 do
+count=iro_effect(count)
+sankaku(set_6[3*i+1],set_6[3*i+2],set_6[3*i+3])
+end
+end
+
+end
+
+
+
+--mode7の関数--
+local function mode_7()
+
+local kazu=addset[2]
+local j=ransu[3]
+local i,ra_1,ra_2,ra_3
+for i=0,kazu-1 do
+repeat
+if(j==nil)then
+j=1
+else
+j=j+1
+end
+ra_1=obj.rand(0,#a/3-1,-1*j,1)
+ra_2=obj.rand(0,#a/3-1,-1*j,2)
+ra_3=obj.rand(0,#a/3-1,-1*j,3)
+until ra_1~=ra_2 or ra_1~=ra_3 or ra_2~=ra_3
+count=iro_effect(count)
+sankaku(ra_1,ra_2,ra_3)
+end
+
+end
+
+
+
+--////ここからmain////--
+
+--それぞれのmodeの実行--
+if(mode==1)then
+mode_1()
+elseif(mode==2)then
+mode_2()
+elseif(mode==3)then
+mode_3()
+elseif(mode==4)then
+mode_4()
+elseif(mode==5)then
+mode_5()
+elseif(mode==7)then
+mode_7()
+else
+local mode_0=nil
+end
+
+--mode6の実行--
+if(mode~=0)then
+mode_6()
+end
+
+--描画されなかったときに透明度を0に--
+if(mode~=0)then
+obj.alpha=0
+end
+
+
+--終了--
