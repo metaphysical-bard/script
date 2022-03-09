@@ -1,0 +1,50 @@
+--dialog:min,local a=R_NEST("A");
+
+
+--三角形を描画する関数--
+local function sankaku(a_1,a_2,a_3)
+local b_1=a_1*3+1
+local b_2=a_2*3+1
+local b_3=a_3*3+1
+obj.drawpoly(a[b_1],a[b_1+1],a[b_1+2],
+		 a[b_2],a[b_2+1],a[b_2+2],
+		 a[b_3],a[b_3+1],a[b_3+2],
+		 a[b_3],a[b_3+1],a[b_3+2])
+end
+
+
+--mode3の関数--
+local function mode_3()
+
+local b={}
+b=a
+local a={}
+local c={}
+local i,t,z
+for i=1,#b/3 do
+c[i]=i
+end
+--シャッフル
+for i=0,#c-1 do
+	z=obj.rand(0,#c-1,-1*#c,i+1+obj.frame)
+	t=c[i+1]
+	c[i+1]=c[z+1]
+	c[z+1]=t
+end
+------------
+for i=1,#b/3 do
+a[(i)*3-2]=b[c[i]*3-2]
+a[(i)*3-1]=b[c[i]*3-1]
+a[(i)*3]=b[c[i]*3]
+end
+for i=0,#a/3-3 do
+sankaku(i,i+1,i+2)
+end
+sankaku(#a/3-2,#a/3-1,0)
+sankaku(#a/3-1,0,1)
+
+end
+
+
+
+mode_3()

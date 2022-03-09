@@ -1,0 +1,365 @@
+--[[ColorfulFaces3.anm
+
+参考座標をもとに、三角形を描画します。
+参考座標は、93さんの座標格納スクリプトを用いると便利です。
+
+
+
+////説明////
+
+alpha--透明度
+
+fade--フェードを行う距離。
+
+min--最小の三角形の三辺の平均。
+
+max--最大の三角形の三辺の平均。
+
+参考座標--参考にする座標。
+
+mode0~9--modeを決めれます。
+		0 なにもなし。
+		1 すべての組み合わせで三角形を描画します。
+			minとmaxで絞らないと重いです。
+		2 座標の数と同じ数だけ描画します。(補間ありチェック時)
+		3 2のランダムver.
+		4 2の一飛びver.
+		5 2の二飛びver.
+		6 2の三飛びver.
+		7 座標一つにつき、一つの三角形の頂点になります。
+			(座標が三の倍数である必要があります。)
+		8 7の別ver.
+		9 番号で指定します。スクリプト制御用です。
+
+補間あり--modeが2,4,5,6のときに有効です。
+
+mode9--modeが9のときに有効です。{0,1,2,2,3,4}のように入力します。
+		数字は、いくつめの座標かです。
+		座標は0からカウントしているので、注意が必要です。
+
+単色化--それぞれ{単色化の強さ,輝度保持の有無,単色化パターン,set}です。
+		単色化パターンは、
+			0 単色化なし。
+			1 おそらく規則的。
+			2 ランダム。
+			3 描画順に補間。setで次色までの描画数を決めれる。
+
+color--単色化する際に使われる色。{0xff,0xbb,0xdd}のように指定してください。
+
+colortest--なにもなし。ただあるだけ。
+
+seed--seed値。
+
+
+///////////////////////////////////////////////////
+エラーやバグ報告はツイッターとかにお願いします。
+https://twitter.com/metaphysicalba1
+//////////////////////////////////////////////////
+
+]]
+
+
+
+--track0:alpha,0,100,0,0.01
+--track1:fade,0,10000,0,0.01
+--track2:min,0,10000,0,0.01
+--track3:max,0,10000,200,0.01
+--dialog:参考座標,local a=R_NEST("A");mode0~9,local mode=2;補間あり/chk,local hokan=1;mode9,local add_9={};単色化,local iro={100,0,3,10};color,local ma={0xff,0xffff};colortest/col,local test=0xffffff;seed,local ransu=10;
+
+
+
+--変数処理--
+local fade=obj.track1
+local count=1
+local i,j,f
+
+
+
+--三角形を描画する関数--
+local function sankaku(a_1,a_2,a_3)
+
+local b_1=a_1*3+1
+local b_2=a_2*3+1
+local b_3=a_3*3+1
+obj.effect()
+obj.drawpoly(a[b_1],a[b_1+1],a[b_1+2],
+		 a[b_2],a[b_2+1],a[b_2+2],
+		 a[b_3],a[b_3+1],a[b_3+2],
+		 a[b_3],a[b_3+1],a[b_3+2])
+
+end
+
+
+
+--透明度を決める関数--
+local function set_alpha(d)
+
+local alpha_1,alpha_2,alpha_3
+if(d-obj.track2<fade)then
+alpha_1=(d-obj.track2)/fade
+else
+alpha_1=1-obj.track0/100
+end
+if(obj.track3-d<fade)then
+alpha_2=(obj.track3-d)/fade
+else
+alpha_2=1-obj.track0/100
+end
+alpha_3=1-obj.track0/100
+obj.alpha=math.min(alpha_1,alpha_2,alpha_3)
+
+end
+
+
+
+--単色化の関数--
+local function set_effect(i,j,f,count)
+
+if(iro[3]==1)then
+local kara=ma[count%#ma+1]
+obj.effect("単色化","強さ",iro[1],"輝度を保持する",iro[2],"color",kara)
+count=count+1
+
+elseif(iro[3]==2)then
+local minmin=obj.rand(0,#ma-1,ransu,count)
+local kara=ma[minmin+1]
+obj.effect("単色化","強さ",iro[1],"輝度を保持する",iro[2],"color",kara)
+count=count+1
+
+elseif(iro[3]==3)then
+local i=math.floor(count/iro[4])
+local r_1,g_1,b_1=RGB(ma[i%(#ma-1)+1])
+local r_2,g_2,b_2=RGB(ma[i%(#ma-1)+2])
+local kara=RGB(math.floor(r_1+(r_2-r_1)*(count)/iro[4]),math.floor(g_1+(g_2-g_1)*(count)/iro[4]),math.floor(b_1+(b_2-b_1)*(count)/iro[4]))
+obj.effect("単色化","強さ",iro[1],"輝度を保持する",iro[2],"color",kara)
+count=count+1
+
+else
+local minmin=nil
+end
+
+return count
+
+end
+
+
+
+--描画用の関数--
+local function CF_draw(i,j,f,count)
+
+local d_1,d_2,d_3,d
+if(i==j or i==f or f==j)then
+d=obj.track3+1
+else
+d_1=((a[i*3+1]-a[j*3+1])^2+(a[i*3+2]-a[j*3+2])^2+(a[i*3+3]-a[j*3+3])^2)^0.5
+d_2=((a[i*3+1]-a[f*3+1])^2+(a[i*3+2]-a[f*3+2])^2+(a[i*3+3]-a[f*3+3])^2)^0.5
+d_3=((a[f*3+1]-a[j*3+1])^2+(a[f*3+2]-a[j*3+2])^2+(a[f*3+3]-a[j*3+3])^2)^0.5
+d=(d_1+d_2+d_3)/3
+count=set_effect(i,j,f,count)
+end
+if(d<obj.track3 and d>obj.track2)then
+set_alpha(d)
+sankaku(i,j,f)
+end
+return count
+
+end
+
+
+
+--mode1の関数--
+local function mode_1()
+
+local d_1,d_2,d_3,d
+local saisyo=obj.track2
+local saidai=obj.track3
+for i=0,#a/3-1 do
+if(i~=#a/3-1)then
+for j=0+i,#a/3-1 do
+if(j~=#a/3-1)then
+for f=0+j,#a/3-1 do
+count=CF_draw(i,j,f,count)
+end
+end
+end
+end
+end
+
+end
+
+
+
+--mode2の関数--
+local function mode_2()
+
+for i=0,#a/3-3 do
+j=i+1
+f=i+2
+count=CF_draw(i,j,f,count)
+end
+if(hokan==1)then
+count=CF_draw(#a/3-2,#a/3-1,0,count)
+count=CF_draw(#a/3-1,0,1,count)
+end
+
+end
+
+
+
+--mode3の関数--
+local function mode_3()--mode3は、アルゴリズムよくわからん…
+
+local c={}
+local i,z,t
+for i=0,#a/3-1 do
+c[i+1]=i
+end
+for i=0,#a/3-1 do
+z=obj.rand(1,#a/3-i,-1-ransu,i+1)
+t=c[z]
+c[z]=c[i+1]
+c[i+1]=t
+end
+for i=0,#a/3-4 do
+count=CF_draw(c[i+1],c[i+2],c[i+3],count)
+end
+count=CF_draw(c[#c-1],c[#c],c[1],count)
+count=CF_draw(c[#c],c[1],c[2],count)
+
+end
+
+
+
+--mode4の関数--
+local function mode_4()
+
+for i=0,#a/3-5 do
+j=i+2
+f=i+4
+count=CF_draw(i,j,f,count)
+end
+if(hokan==1)then
+count=CF_draw(#a/3-4,#a/3-2,0,count)
+count=CF_draw(#a/3-3,#a/3-1,1,count)
+count=CF_draw(#a/3-2,0,2,count)
+count=CF_draw(#a/3-1,1,3,count)
+end
+
+end
+
+
+
+--mode5の関数--
+local function mode_5()
+
+for i=0,#a/3-7 do
+j=i+3
+f=i+6
+count=CF_draw(i,j,f,count)
+end
+if(hokan==1)then
+count=CF_draw(#a/3-6,#a/3-3,0,count)
+count=CF_draw(#a/3-5,#a/3-2,1,count)
+count=CF_draw(#a/3-4,#a/3-1,2,count)
+count=CF_draw(#a/3-3,0,3,count)
+count=CF_draw(#a/3-2,1,4,count)
+count=CF_draw(#a/3-1,2,5,count)
+end
+
+end
+
+
+
+--mode6の関数--
+local function mode_6()
+
+for i=0,#a/3-9 do
+j=i+4
+f=i+8
+count=CF_draw(i,j,f,count)
+end
+if(hokan==1)then
+count=CF_draw(#a/3-8,#a/3-4,0,count)
+count=CF_draw(#a/3-7,#a/3-3,1,count)
+count=CF_draw(#a/3-6,#a/3-2,2,count)
+count=CF_draw(#a/3-5,#a/3-1,3,count)
+count=CF_draw(#a/3-4,0,4,count)
+count=CF_draw(#a/3-3,1,5,count)
+count=CF_draw(#a/3-2,2,6,count)
+count=CF_draw(#a/3-1,3,7,count)
+end
+
+end
+
+
+
+--mode7の関数--
+local function mode_7()
+
+if((#a/3)%3~=1 and (#a/3)%3~=2)then
+for i=0,(#a/3)/3-1 do
+count=CF_draw(i*3,i*3+1,i*3+2,count)
+end
+end
+
+end
+
+
+
+--mode8の関数--
+local function mode_8()
+
+if((#a/3)%3~=1 and (#a/3)%3~=2)then
+for i=0,(#a/3)/3-1 do
+j=i+(#a/3)/3
+f=j+(#a/3)/3
+count=CF_draw(i,j,f,count)
+end
+end
+
+end
+
+
+
+--mode9の関数--
+local function mode_9()
+
+if(#add_9%3~=1 and #add_9%3~=2)then
+for i=0,#add_9/3-1 do
+count=CF_draw(add_9[i*3+1],add_9[i*3+2],add_9[i*3+3],count)
+end
+end
+
+end
+
+
+
+--main--
+if(mode==1)then
+mode_1()
+elseif(mode==2)then
+mode_2()
+elseif(mode==3)then
+mode_3()
+elseif(mode==4)then
+mode_4()
+elseif(mode==5)then
+mode_5()
+elseif(mode==6)then
+mode_6()
+elseif(mode==7)then
+mode_7()
+elseif(mode==8)then
+mode_8()
+elseif(mode==9)then
+mode_9()
+else
+local mode_0=nil
+end
+
+
+
+--描画失敗用--
+obj.alpha=0
+
+
