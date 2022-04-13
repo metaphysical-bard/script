@@ -1,0 +1,47 @@
+--[[
+
+ふわふわ.anm
+	オブジェクトの色をもとに、グラデーションみたいなことを行います
+	同じフォルダにM_huwahuwa_Module.dllも置いてください
+
+]]
+
+--track0:アンカー,0,16,4,1
+--track1:alpha,0,100,30
+--track2:r,0,1000,0
+--track3:a,0,1000,200
+--check0:draw,1
+--dialog:set_anchor,pos={-200,-200,0,200,-200,0,-200,200,0,200,200,0};色1/col,local ca=0xf92f83;色2/col,local cb=0xff;色3/col,local cc=0xc69d4f;色4/col,local cd=0x62c33b;色5,local ce={};
+
+local data,w,h=obj.getpixeldata()
+
+obj.setanchor("pos",obj.track0,"xyz")
+
+if(obj.check0)then
+	for i=0,#pos/3-1 do
+		pos[i*3+1]=pos[i*3+1]+obj.w/2
+		pos[i*3+2]=pos[i*3+2]+obj.h/2
+	end
+	local col={ca,cb,cc,cd}
+	if(#ce>0)then
+		for i=0,#ce-1 do
+		col[5+i]=ce[i+1]
+		end
+	end
+	for i=0,math.floor(#pos/3)-#col do
+		local a=#col+1
+		col[a]=col[i+1]
+	end
+	local coltable={}
+	for i=0,#pos/3-1 do
+		local r,g,b=RGB(col[i+1])
+		coltable[i*3+1]=r
+		coltable[i*3+2]=g
+		coltable[i*3+3]=b
+	end
+	require("M_huwahuwa_Module")
+	M_huwahuwa_Module.hu(data,w,h,math.floor(#pos/3),pos,coltable,obj.track2,obj.track3,100-obj.track1)
+	obj.putpixeldata(data)
+	obj.effect()
+	obj.draw()
+end

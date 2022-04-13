@@ -1,0 +1,198 @@
+--[[
+
+ToneCurve_M.anm
+	コントラストとかを微調整するスクリプトです
+	同じフォルダにM_ToneCurve_Module.dllも置いてください
+	トーンカーブを名乗ってますが、突っ込みどころの多いエセトーンカーブです
+
+既知のバグ
+	・graphが2か3だと重ね掛けできない
+		スクリプト制御の場合、重ね掛け可能
+
+	・拡大率を変化させるとアンカーが変になる
+		リサイズを使用すれば大丈夫かも
+
+graph
+	 偶数だとヒストグラムが表示されます
+	 0 アンカーを使用します
+	 1 アンカーを使用します
+	 2 マルチベジェ軌道を使用します
+	 3 マルチベジェ軌道を使用します
+
+mode
+	 0 明るさ
+	 1 赤緑青
+	 2 赤
+	 3 緑
+	 4 青
+	 5 緑青(シアン)
+	 6 赤青(マゼンタ)
+	 7 赤緑(イエロー)
+	 8 透明度
+	 9 明度
+	10 輝度
+	11 色差(Cb)
+	12 色差(Cr)
+	13 輝度でガンマ補正
+	14 明るさで透明度
+	15 明度で透明度
+	16 輝度で透明度
+
+call_number
+	マルチベジェ軌道の軌道番号です
+
+]]
+
+
+--track0:anchor,0,16,3,1
+--track1:size,0,1000,100,0.01
+--track2:graph,0,3,1,1
+--track3:mode,0,16,1,1
+--check0:draw,1
+--dialog:set_anchor,pos={-obj.w/2,obj.h/2,0,obj.w/2-0.01,-obj.h/2,0};call_number,local number=1;
+
+
+--variable
+local data,pw,ph=obj.getpixeldata()
+local meido={}
+local a,i,j
+local w=obj.w
+local h=obj.h
+local q=obj.track1*0.0001
+local Pdata={}
+local Rdata={}
+local Gdata={}
+local Bdata={}
+local Adata={}
+if(obj.track2==0 or obj.track2==1)then
+	obj.setanchor("pos",obj.track0,"xyz")
+end
+local posnum=math.floor(#pos/3)
+
+
+--set_meido
+if(obj.check0)then
+	if(obj.track2==0 or obj.track2==1)then
+		for i=0,posnum-1 do
+			if(pos[i*3+1]>w/2)then pos[i*3+1]=w/2-1 end
+			if(pos[i*3+1]<-w/2)then pos[i*3+1]=-w/2 end
+			if(pos[i*3+2]>h/2)then pos[i*3+2]=h/2 end
+			if(pos[i*3+2]<-h/2)then pos[i*3+2]=-h/2 end
+			if(pos[i*3+3]~=0)then pos[i*3+3]=0 end
+		end
+		for i=0,posnum-1 do
+			for j=i,posnum-1 do
+				if(pos[i*3+1]>pos[j*3+1])then
+					for z=1,3 do
+						local s=pos[i*3+z]
+						pos[i*3+z]=pos[j*3+z]
+						pos[j*3+z]=s
+					end
+				end
+			end
+		end
+		for i=0,posnum-1 do
+			pos[i*3+1]=pos[i*3+1]+w/2
+		end
+		for i=0,255 do
+			local now=w/255*i
+			local y
+			if(pos[1]>now)then
+				y=pos[2]
+			elseif(pos[(posnum-1)*3+1]<now)then
+				y=pos[(posnum-1)*3+2]
+			else
+				local x=1
+				for j=1,posnum-1 do
+					if(math.abs(pos[x]-now)>math.abs(pos[j*3+1]-now) and now>=pos[j*3+1])then
+						x=j*3+1
+					end
+				end
+				if(x==1)then
+					local time=(now-pos[x])/(pos[x+3]-pos[x])
+					if(#pos>=9)then
+						x,y=obj.interpolation(time,pos[x],pos[x+1],pos[x],pos[x+1],pos[x+3],pos[x+1+3],pos[x+6],pos[x+1+6])
+					else
+						x,y=obj.interpolation(time,pos[x],pos[x+1],pos[x],pos[x+1],pos[x+3],pos[x+1+3],pos[x+3],pos[x+1+3])
+					end
+				elseif(x==#pos-5)then
+					local time=(now-pos[x])/(pos[x+3]-pos[x])
+					x,y=obj.interpolation(time,pos[x-3],pos[x+1-3],pos[x],pos[x+1],pos[x+3],pos[x+1+3],pos[x+3],pos[x+1+3])
+				else
+					local time=(now-pos[x])/(pos[x+3]-pos[x])
+					x,y=obj.interpolation(time,pos[x-3],pos[x+1-3],pos[x],pos[x+1],pos[x+3],pos[x+1+3],pos[x+6],pos[x+1+6])
+				end
+			end
+			y=(-y+h/2)/h*255
+			if(y<0)then y=0 elseif(y>255)then y=255 end
+			meido[i+1]=y
+		end
+	elseif(obj.track2==2 or obj.track2==3)then
+		for i=0,255 do
+			a=Bezier_flow.time(number,i/255)*255
+			if(a<0)then a=0 end
+			if(a>255)then a=255 end
+			meido[i+1]=a
+		end
+	end
+else
+	for i=0,255 do
+		meido[i+1]=i
+	end
+end
+
+
+--dll
+require("M_ToneCurve_Module")
+M_ToneCurve_Module.henka(data,pw,ph,obj.track3,meido,Pdata,Rdata,Gdata,Bdata,Adata)
+obj.putpixeldata(data)
+obj.effect()
+obj.draw()
+
+
+--histogram
+if(obj.track2==1 or obj.track2==3)then
+	local d={Pdata,Rdata,Gdata,Bdata,Adata}
+	local c={0xff0000,0x00ff00,0x0000ff,0xffffff,0x000000}
+	local n=4
+	if(n>=0)then
+		for j=0,n do
+			for i=0,254 do
+				obj.load("figure","四角形",c[j+1],1)
+				obj.alpha=0.3
+				obj.drawpoly(w/255*i-w/2,-d[j+1][i+1]*q+h/2,0,
+				w/255*(i+1)-w/2,-d[j+1][i+2]*q+h/2,0,
+				w/255*(i+1)-w/2,h/2,0,
+				w/255*i-w/2,h/2,0)
+			end
+		end
+	end
+end
+
+
+--anchor
+if(obj.track2==1)then
+	obj.load("figure","円",0xff0000,50)
+	obj.alpha=0.5
+	for i=0,posnum-1 do
+		local x,y,z
+		if(obj.check0)then
+			x=pos[i*3+1]-w/2
+		else
+			x=pos[i*3+1]
+		end
+		y=pos[i*3+2]
+		z=pos[i*3+3]
+		obj.draw(x,y,z)
+	end
+end
+
+
+--graph
+if(obj.track2==1)then
+	obj.load("figure","円",0xff0000,10)
+	for i=0,255 do
+		obj.draw(w/255*i-w/2,-h/255*meido[i+1]+h/2)
+	end
+end
+
