@@ -1,0 +1,60 @@
+--[[
+
+グラデーション_M.anm
+	グラデを目指したものです
+	同じフォルダにM_gradation_Module.dllも置いてください
+	扱える最大の座標数と色の数はそれぞれ80です
+
+]]
+
+--track0:アンカー,0,16,4,1
+--track1:透明度,0,100,30,0.01
+--track2:幅,0,5000,200,0.01
+--track3:ぼかし,0,1000,0,0.01
+--check0:全体でグラデ,0
+--dialog:set_anchor,pos={-200,-200,0,200,-200,0,-200,200,0,200,200,0};色1/col,local ca=0xf92f83;色2/col,local cb=0xff;色3/col,local cc=0xc69d4f;色4/col,local cd=0x62c33b;色5,local ce={};
+
+local data,w,h=obj.getpixeldata()
+
+obj.setanchor("pos",obj.track0,"xyz")
+
+if(#pos<=240)then
+	for i=0,#pos/3-1 do
+		pos[i*3+1]=pos[i*3+1]+obj.w/2
+		pos[i*3+2]=pos[i*3+2]+obj.h/2
+	end
+	local col={}
+	if(ca)then col[1]=ca end
+	if(cb)then col[#col+1]=cb end
+	if(cc)then col[#col+1]=cc end
+	if(cd)then col[#col+1]=cd end
+	if(#ce>0)then
+		for i=0,#ce-1 do
+		col[#col+1]=ce[i+1]
+		end
+	end
+	if(col[1]==nil)then col[1]=0xffffff end
+	for i=0,math.floor(#pos/3)-#col do
+		local a=#col+1
+		col[a]=col[i+1]
+	end
+	local coltable={}
+	for i=0,#pos/3-1 do
+		local r,g,b=RGB(col[i+1])
+		coltable[i*3+1]=r
+		coltable[i*3+2]=g
+		coltable[i*3+3]=b
+	end
+	local mode=0
+	local haba=obj.track2
+	if(obj.check0)then
+		mode=1
+		haba=(haba*3-10000)/10000+0.000001
+	end
+	if(#col<=240)then
+		require("M_gradation_Module")
+		M_gradation_Module.grd(data,w,h,math.floor(#pos/3),pos,coltable,100-obj.track1,haba,mode)
+	end
+	obj.putpixeldata(data)
+	obj.effect("ぼかし","範囲",obj.track3)
+end
