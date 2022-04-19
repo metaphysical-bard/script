@@ -1,0 +1,37 @@
+--[[
+
+SaveImage_M.anm
+	Extram.dllを使用した一時保存系のスクリプト
+	便利だけど、スクリプトフォルダ直下じゃないと動かない
+
+]]
+
+
+@SaveImage
+--track0:ID1,0,100,0,1
+--track1:ID2,0,100,0,1
+--track2:ID3,0,100,0,1
+--track3:ID4,0,100,0,1
+--check0:保存,0
+if(obj.check0)then
+local name = obj.track0 .. obj.track1 .. obj.track2 .. obj.track3
+local data, w, h = obj.getpixeldata()
+local Extram = require('Extram')
+Extram.put(name, data, w * 4 * h)
+Extram.meta[name] = {w=w, h=h}
+end
+
+
+@PutImage
+--track0:ID1,0,100,0,1
+--track1:ID2,0,100,0,1
+--track2:ID3,0,100,0,1
+--track3:ID4,0,100,0,1
+local name = obj.track0 .. obj.track1 .. obj.track2 .. obj.track3
+local Extram = require('Extram')
+local meta = Extram.meta[name]
+obj.setoption("drawtarget", "tempbuffer", meta.w, meta.h)
+obj.load("tempbuffer")
+local data, w, h = obj.getpixeldata()
+Extram.get(name, data, w * 4 * h)
+obj.putpixeldata(data)
