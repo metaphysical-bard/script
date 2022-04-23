@@ -1,0 +1,78 @@
+--[[
+
+配色スクリプト_M.obj
+	オストワルト表色系を目指したものです
+	いいかんじの色を探すスクリプトです
+
+]]
+
+--track0:列,1,100,8,1
+--track1:色相,-3600,3600,0
+--track2:サイズ,0,1000,30
+--track3:隙間,0,1000,10
+--dialog:色/col,local col_1=0xff;上の色/col,local col_2=0xffffff;下の色/col,local col_3=0x000000;
+
+local i,j,z,x,y
+local wh=obj.track0*obj.track2+(obj.track0+1)*obj.track3
+
+local scol={}
+scol[1],scol[2],scol[3]=RGB(col_1)
+scol[4],scol[5],scol[6]=RGB(col_2)
+scol[7],scol[8],scol[9]=RGB(col_3)
+
+local pos={}
+pos[1],pos[2]=wh/2-obj.track2-obj.track3,-obj.track3/2
+pos[3],pos[4]=-wh/2+obj.track3,-wh/2+obj.track3
+pos[5],pos[6]=-wh/2+obj.track3,wh/2-obj.track2-obj.track3
+
+local mx=pos[1]-pos[3]
+local mx_2=pos[6]-pos[4]
+obj.setoption("drawtarget","tempbuffer",wh,wh)
+
+for i=0,obj.track0-1 do
+	for j=0,obj.track0-1-i do
+		if(i==0 and j==0)then
+			obj.setoption("drawtarget","tempbuffer")
+		end
+		obj.load("figure","四角形")
+		x=i*(obj.track2+obj.track3)-wh/2+obj.track3
+		y=j*(obj.track2+obj.track3)-wh/2+i*(obj.track2+obj.track3)/2+obj.track3
+		local dis={}
+		dis[1]=(x+mx/2+obj.track2/2)/mx
+		if(dis[1]==1)then
+			dis[2]=0
+			dis[3]=0
+		else
+			local sa=1-dis[1]
+			dis[3]=(y+mx_2/2+obj.track2/2)/mx_2
+			dis[2]=1-dis[3]
+			dis[3]=dis[3]*sa
+			dis[2]=dis[2]*sa
+		end
+		local souwa=0
+		for z=0,2 do
+			dis[z+1]=dis[z+1]
+			souwa=souwa+dis[z+1]
+		end
+		local r,g,b=0,0,0
+		for z=0,2 do
+			local atai=dis[z+1]/souwa
+			r=r+scol[z*3+1]*atai
+			g=g+scol[z*3+2]*atai
+			b=b+scol[z*3+3]*atai
+		end
+		r,g,b=math.floor(r),math.floor(g),math.floor(b)
+		if(r<0)then r=0 elseif(r>255)then r=255 end
+		if(g<0)then g=0 elseif(g>255)then g=255 end
+		if(b<0)then b=0 elseif(b>255)then b=255 end
+		local color=RGB(r,g,b)
+		obj.effect("単色化","color",color,"輝度を保持する",0)
+		obj.drawpoly(x,y,0,
+				x+obj.track2,y,0,
+				x+obj.track2,y+obj.track2,0,
+				x,y+obj.track2,0)
+	end
+end
+
+obj.load("tempbuffer")
+obj.effect("色調補正","色相",obj.track1)
