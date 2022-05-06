@@ -1,0 +1,106 @@
+--[[
+
+リサージュ曲線(3D).obj
+
+	z軸対応のリサージュ曲線です。
+	半分以上を占める関数はテツさんの格子線から…
+
+]]
+
+
+
+--track0:色相幅,-1000,1000,0
+--track1:Xサイズ,0,3000,100
+--track2:Yサイズ,0,3000,100
+--track3:Zサイズ,0,3000,100
+--check0:draw,1
+--dialog:円サイズ,local es=10;円の数,local n=509;全体で回転,local r={0,0,0};角周波数,local tui={2,3,4};位相差,local del={0,0,0};色/col,local c=0x6161c6;
+
+
+
+--テツさんの格子線の関数
+function Rot_x(x,y,z,angle)
+ local x2,y2,z2
+ x2=x
+ y2=y*math.cos(angle)-z*math.sin(angle)
+ z2=y*math.sin(angle)+z*math.cos(angle)
+ return x2,y2,z2
+end
+
+function Rot_y(x,y,z,angle)
+ local x2,y2,z2
+ x2=x*math.cos(angle)+z*math.sin(angle)
+ y2=y
+ z2=-x*math.sin(angle)+z*math.cos(angle)
+ return x2,y2,z2
+end
+
+function Rot_z(x,y,z,angle)
+ local x2,y2,z2
+ x2=x*math.cos(angle)-y*math.sin(angle)
+ y2=x*math.sin(angle)+y*math.cos(angle)
+ z2=z
+ return x2,y2,z2
+end
+
+function Rotate(pos,RX,RY,RZ)
+ local pos_num=#pos/3
+ for i=1,pos_num do
+   pos[3*i-2],pos[3*i-1],pos[3*i]=Rot_z(pos[3*i-2],pos[3*i-1],pos[3*i],math.rad(RZ))
+   pos[3*i-2],pos[3*i-1],pos[3*i]=Rot_y(pos[3*i-2],pos[3*i-1],pos[3*i],math.rad(RY))
+   pos[3*i-2],pos[3*i-1],pos[3*i]=Rot_x(pos[3*i-2],pos[3*i-1],pos[3*i],math.rad(RX))
+ end
+ return pos
+end
+
+
+
+--ここから処理
+obj.load("figure","円",0xffffff,es)
+obj.effect("カメラ制御オプション","カメラの方を向く",1)
+
+local siz={obj.track1,obj.track2,obj.track3}
+local si=obj.track0/3
+
+
+--描画
+if(obj.check0)then
+
+	for i=0,n-1 do
+
+		--座標の計算
+		local sita=2*math.pi*i/n
+		local x=siz[1]*math.sin(tui[1]*sita+del[1])
+		local y=siz[2]*math.sin(tui[2]*sita+del[2])
+		local z=siz[3]*math.sin(tui[3]*sita+del[3])
+
+		--色の計算
+		local color=c
+		if(si~=0)then
+			local h,s,v=HSV(c)
+			h=h+si*x/siz[1]
+			h=h+si*y/siz[2]
+			h=h+si*z/siz[3]
+
+			h=math.floor(h)
+
+			while h<0 do h=h+360 end
+			while h>360 do h=h-360 end
+
+			color=HSV(h,s,v)
+		end
+
+		--回転
+		local p={x,y,z}
+		p=Rotate(p,r[1],r[2],r[3])
+
+		--色を付け、描画
+		obj.effect("単色化","color",color,"輝度を保持する",0)
+		obj.effect()
+		obj.draw(p[1],p[2],p[3])
+
+	end
+
+end
+
+
