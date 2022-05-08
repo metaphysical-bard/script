@@ -1,0 +1,116 @@
+--[[
+
+DelayTrack_M.obj
+	スクリプト制御でdelayするときに、少し便利にしようとしたものです。
+	function_M.luaが必要です。
+
+	delayとrand以外のトラックバーはすべてdelayしてグローバル変数で流しています。
+	DT_M["x".."name"]
+
+	他のレイヤーのトラックバーでdelayします。
+	DT_L[layer]["x"]
+
+	座標をもとに、0~1の値が入ったテーブルを返します。
+	DT_F["name"]
+
+
+	delay
+		ミリ秒で指定
+
+	rand
+		DelayMoveの項目とは違うので注意
+
+	delay数
+		テーブルに入る値の数を決めます。
+
+	order
+		delayの方法を決めます。
+		テーブルで渡すこともできます。
+		テーブルの場合は0でdelayなし、1でdelay最大です。
+		{0,0.5,1}のようにすると三つの値がループするようになっています。
+		1 0~1の順です。
+		2 1~0の順です。
+		3 0~1~0の順です。
+		4 1~0~1の順です。
+
+		
+]]
+
+
+--track0:1,-1000,1000,0,0.01
+--track1:2,-1000,1000,0,0.01
+--track2:delay,0,1000,100,0.01
+--track3:rand,0,100,0,0.01
+--dialog:delay数,local n=10;order,local o=1;delayするレイヤー,local l={};pos,pos={};delay元の座標,local p={};名前,local name="";seed,local seed=0;リセット/chk,local rs=0;
+
+
+--諸々
+require("function_M")
+obj.setanchor("pos",1,"xyz")
+local gv=obj.getvalue
+local g={"x","y","z","zoom","alpha","aspect","rx","ry","rz","cx","cy","cz",0,1}
+
+
+--このスクリプトのトラックバー
+local t=DelayMove_M(o,n,obj.track3/100,seed,obj.track2)
+local dt={}
+
+for i=1,14 do
+	dt[g[i]]={}
+end
+
+for j=1,14 do
+	for i=1,n do
+		dt[g[j]][i]=gv(g[j],t[i])
+	end
+end
+
+DT_M={}
+for i=1,14 do
+	DT_M[g[i]..name]=dt[g[i]]
+end
+
+
+--他のレイヤー
+if(DT_L==nil)then
+	DT_L={}
+end
+
+for z=1,#l do
+	local t=DelayMove_M(o,n,obj.track3/100,seed,obj.track2)
+	local dt={}
+
+	for i=1,12 do
+		dt[g[i]]={}
+	end
+
+	for j=1,12 do
+		for i=1,n do
+			dt[g[j]][i]=gv(g[j],t[i])
+		end
+	end
+
+	DT_L[l[z]]={}
+
+	for i=1,12 do
+		DT_L[l[z]][g[i]]=dt[g[i]]
+	end
+end
+
+
+
+--座標をもとに
+local ef=DelaiyField_M(p,pos)
+
+if(DT_F==nil)then DT_F={} end
+DT_F[name]={}
+DT_F[name]=ef
+
+
+--リセット
+if(rs==1)then
+	DT_M={}
+	DT_L={}
+	DT_F={}
+end
+
