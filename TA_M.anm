@@ -1,0 +1,399 @@
+--[[
+
+TA_M.anm
+	僕がよく使用するテキストアニメーションをまとめたものです。
+	オリジナル要素のないパクリまくりのコードです。
+
+]]
+
+--track0:時間,0,1000,100,0.01
+--track1:強度,-100,100,1,0.01
+--track2:ずれ,0,1000,0,0.01
+--track3:オプション,0,10,0,1
+--check0:フェード,1
+--dialog:軌道番号,local n=0;座標(始),local sp={0,100,0};　　　(終),local fp={0,-100,0};回転(始),local sr={0,0,0};　　　(終),local fr={0,0,0};ずれ方,local ind=1;ランダム,local r=0;seed,local seed=0;
+
+local i,posnum=obj.index,obj.num
+local t,kk,delaytime,mode=obj.track0/100,obj.track1/10,obj.track2/100,obj.track3
+local r=r/100
+
+local delay,s
+
+if(ind==1)then
+	delay=i/(posnum-1)
+elseif(ind==2)then
+	delay=(posnum-1-i)/(posnum-1)
+elseif(ind==3)then
+	delay=math.abs((posnum-1)/2-i)/(posnum-1)
+elseif(ind==4)then
+	delay=((posnum-1)/2-math.abs((posnum-1)/2-i))/(posnum-1)
+else
+	delay=ind[i%#ind+1]
+end
+
+local ra=obj.rand(0,1000,seed,15+i)/1000
+delay=delay+r*(ra-delay)
+
+delay=delay*delaytime
+delay=math.min(obj.totaltime,math.max(0,obj.time-delay))
+
+
+local es,ef=0,0
+if(delay<t)then
+	s=delay/t
+	if(1<=n and n<=10)then
+		es=1-Bezier_flow.time(n,s)
+	else
+		es=1-s
+	end
+end
+
+if(obj.totaltime-delay-delaytime<t)then
+	s=(obj.totaltime-delay-delaytime)/t
+	if(1<s or 0>s)then
+		ef=1
+	elseif(1<=n and n<=10)then
+		ef=1-Bezier_flow.time(n,s)
+	else
+		ef=1-s
+	end
+end
+
+obj.ox=obj.ox+sp[1]*es
+obj.oy=obj.oy+sp[2]*es
+obj.oz=obj.oz+sp[3]*es
+
+obj.rx=obj.rx+sr[1]*es
+obj.ry=obj.ry+sr[2]*es
+obj.rz=obj.rz+sr[3]*es
+
+obj.ox=obj.ox+fp[1]*ef
+obj.oy=obj.oy+fp[2]*ef
+obj.oz=obj.oz+fp[3]*ef
+
+obj.rx=obj.rx+fr[1]*ef
+obj.ry=obj.ry+fr[2]*ef
+obj.rz=obj.rz+fr[3]*ef
+
+
+if(obj.check0)then
+
+	if(delay<t)then
+		s=delay/t
+		if(1<=n and n<=10)then
+			obj.alpha=obj.alpha*Bezier_flow.time(n,s)
+		else
+			obj.alpha=obj.alpha*s
+		end
+	end
+
+	if(obj.totaltime-delay-delaytime<t)then
+		s=(obj.totaltime-delay-delaytime)/t
+		if(1<s or 0>s)then
+			obj.alpha=0
+		elseif(1<=n and n<=10)then
+			obj.alpha=obj.alpha*Bezier_flow.time(n,s)
+		else
+			obj.alpha=obj.alpha*s
+		end
+	end
+
+end
+
+
+local function bagcolor(amount)
+if(amount<0)then amount=0 elseif(amount>100)then amount=100 end
+obj.copybuffer("tmp","obj")
+
+local ZOOM=obj.getvalue("zoom")/100
+local w,h=obj.screen_w,obj.screen_h
+local x,y,z=obj.ox-obj.cx*ZOOM, obj.oy-obj.cy*ZOOM, obj.oz-obj.cz*ZOOM
+local rx,ry,rz=obj.rx,obj.ry,obj.rz
+local alpha,zoom=obj.alpha,obj.zoom
+local fx,fy=x+obj.x+w/2 ,y+obj.y+h/2
+fx=math.max(1,math.min(w-1,fx))
+fy=math.max(1,math.min(h-1,fy))
+
+obj.load("framebuffer",fx,fy,1,1)
+
+local icolor=obj.getpixel(0,0)
+
+obj.copybuffer("obj","tmp")
+
+obj.ox,obj.oy,obj.oz=x,y,z
+obj.rx,obj.ry,obj.rz=rx,ry,rz
+obj.alpha,obj.zoom=alpha,zoom 
+obj.effect("単色化","強さ",amount,"color",icolor,"輝度を保持する",0)
+end
+
+
+if(mode==1)then
+
+	if(delay<t)then
+		s=delay/t
+		if(1<=n and n<=10)then
+			bagcolor(100-Bezier_flow.time(n,s)*100)
+		else
+			bagcolor(100-s*100)
+		end
+	end
+
+	if(obj.totaltime-delay-delaytime<t)then
+		s=(obj.totaltime-delay-delaytime)/t
+		if(1<s or 0>s)then
+			bagcolor(100)
+		elseif(1<=n and n<=10)then
+			bagcolor(100-Bezier_flow.time(n,s)*100)
+		else
+			bagcolor(100-s*100)
+		end
+	end
+
+	if(not(delay<t and obj.totaltime-delay-delaytime<t))then
+		bagcolor(0)
+	end
+
+elseif(mode==2)then
+
+	if(delay<t)then
+		s=delay/t
+		if(1<=n and n<=10)then
+			obj.ox=obj.ox+obj.ox*(1-Bezier_flow.time(n,s))*kk
+		else
+			obj.ox=obj.ox+obj.ox*(1-s)*kk
+		end
+	end
+
+	if(obj.totaltime-delay-delaytime<t)then
+		s=(obj.totaltime-delay-delaytime)/t
+		if(1<s or 0>s)then
+			obj.ox=obj.ox+obj.ox*1*kk
+		elseif(1<=n and n<=10)then
+			obj.ox=obj.ox+obj.ox*(1-Bezier_flow.time(n,s))*kk
+		else
+			obj.ox=obj.ox+obj.ox*(1-s)*kk
+		end
+	end
+
+elseif(mode==3)then
+
+	local ra=obj.rand(-1000,1000,seed,32+i)
+	if(delay<t)then
+		s=delay/t
+		if(1<=n and n<=10)then
+			obj.ox=obj.ox+ra*(1-Bezier_flow.time(n,s))*kk
+		else
+			obj.ox=obj.ox+ra*(1-s)*kk
+		end
+	end
+
+	if(obj.totaltime-delay-delaytime<t)then
+		s=(obj.totaltime-delay-delaytime)/t
+		if(1<s or 0>s)then
+			obj.ox=obj.ox+ra*1*kk
+		elseif(1<=n and n<=10)then
+			obj.ox=obj.ox+ra*(1-Bezier_flow.time(n,s))*kk
+		else
+			obj.ox=obj.ox+ra*(1-s)*kk
+		end
+	end
+
+elseif(mode==4)then
+
+	local ra=obj.rand(-1000,1000,seed,32+i)
+	if(delay<t)then
+		s=delay/t
+		if(1<=n and n<=10)then
+			obj.ox=obj.ox+ra*(1-Bezier_flow.time(n,s))*kk
+			obj.oy=obj.oy+ra*(1-Bezier_flow.time(n,s))*kk
+		else
+			obj.ox=obj.ox+ra*(1-s)*kk
+			obj.oy=obj.oy+ra*(1-s)*kk
+		end
+	end
+
+	if(obj.totaltime-delay-delaytime<t)then
+		s=(obj.totaltime-delay-delaytime)/t
+		if(1<s or 0>s)then
+			obj.ox=obj.ox+ra*1*kk
+			obj.oy=obj.oy+ra*1*kk
+		elseif(1<=n and n<=10)then
+			obj.ox=obj.ox+ra*(1-Bezier_flow.time(n,s))*kk
+			obj.oy=obj.oy+ra*(1-Bezier_flow.time(n,s))*kk
+		else
+			obj.ox=obj.ox+ra*(1-s)*kk
+			obj.oy=obj.oy+ra*(1-s)*kk
+		end
+	end
+
+elseif(mode==5)then
+
+	local ra=obj.rand(-1000,1000,seed,32+i)
+	if(delay<t)then
+		s=delay/t
+		if(1<=n and n<=10)then
+			obj.ox=obj.ox+ra*(1-Bezier_flow.time(n,s))*kk
+			obj.oy=obj.oy-ra*(1-Bezier_flow.time(n,s))*kk
+		else
+			obj.ox=obj.ox+ra*(1-s)*kk
+			obj.oy=obj.oy-ra*(1-s)*kk
+		end
+	end
+
+	if(obj.totaltime-delay-delaytime<t)then
+		s=(obj.totaltime-delay-delaytime)/t
+		if(1<s or 0>s)then
+			obj.ox=obj.ox+ra*1*kk
+			obj.oy=obj.oy-ra*1*kk
+		elseif(1<=n and n<=10)then
+			obj.ox=obj.ox+ra*(1-Bezier_flow.time(n,s))*kk
+			obj.oy=obj.oy-ra*(1-Bezier_flow.time(n,s))*kk
+		else
+			obj.ox=obj.ox+ra*(1-s)*kk
+			obj.oy=obj.oy-ra*(1-s)*kk
+		end
+	end
+
+elseif(mode==6)then
+
+	local ra=obj.rand(-1000,1000,seed,32+i)
+	local rb=obj.rand(-1000,1000,seed,64+i)
+	if(delay<t)then
+		s=delay/t
+		if(1<=n and n<=10)then
+			obj.ox=obj.ox+ra*(1-Bezier_flow.time(n,s))*kk
+			obj.oy=obj.oy-rb*(1-Bezier_flow.time(n,s))*kk
+		else
+			obj.ox=obj.ox+ra*(1-s)*kk
+			obj.oy=obj.oy-rb*(1-s)*kk
+		end
+	end
+
+	if(obj.totaltime-delay-delaytime<t)then
+		s=(obj.totaltime-delay-delaytime)/t
+		if(1<s or 0>s)then
+			obj.ox=obj.ox+ra*1*kk
+			obj.oy=obj.oy-rb*1*kk
+		elseif(1<=n and n<=10)then
+			obj.ox=obj.ox+ra*(1-Bezier_flow.time(n,s))*kk
+			obj.oy=obj.oy-rb*(1-Bezier_flow.time(n,s))*kk
+		else
+			obj.ox=obj.ox+ra*(1-s)*kk
+			obj.oy=obj.oy-rb*(1-s)*kk
+		end
+	end
+
+elseif(mode==7)then
+
+	local ra=obj.rand(-1000,1000,seed,32+i)
+	local rb=obj.rand(-1000,1000,seed,64+i)
+	local rc=obj.rand(-1000,1000,seed,128+i)
+	if(delay<t)then
+		s=delay/t
+		if(1<=n and n<=10)then
+			obj.ox=obj.ox+ra*(1-Bezier_flow.time(n,s))*kk
+			obj.oy=obj.oy-rb*(1-Bezier_flow.time(n,s))*kk
+			obj.oz=obj.oz-rc*(1-Bezier_flow.time(n,s))*kk
+		else
+			obj.ox=obj.ox+ra*(1-s)*kk
+			obj.oy=obj.oy-rb*(1-s)*kk
+			obj.oz=obj.oz-rc*(1-s)*kk
+		end
+	end
+
+	if(obj.totaltime-delay-delaytime<t)then
+		s=(obj.totaltime-delay-delaytime)/t
+		if(1<s or 0>s)then
+			obj.ox=obj.ox+ra*1*kk
+			obj.oy=obj.oy-rb*1*kk
+			obj.oz=obj.oz-rc*1*kk
+		elseif(1<=n and n<=10)then
+			obj.ox=obj.ox+ra*(1-Bezier_flow.time(n,s))*kk
+			obj.oy=obj.oy-rb*(1-Bezier_flow.time(n,s))*kk
+			obj.oz=obj.oz-rc*(1-Bezier_flow.time(n,s))*kk
+		else
+			obj.ox=obj.ox+ra*(1-s)*kk
+			obj.oy=obj.oy-rb*(1-s)*kk
+			obj.oz=obj.oz-rc*(1-s)*kk
+		end
+	end
+
+elseif(mode==8)then
+
+	if(delay<t)then
+		s=delay/t
+		if(1<=n and n<=10)then
+			obj.zoom=obj.zoom*Bezier_flow.time(n,s)
+		else
+			obj.zoom=obj.zoom*s
+		end
+	end
+
+	if(obj.totaltime-delay-delaytime<t)then
+		s=(obj.totaltime-delay-delaytime)/t
+		if(1<s or 0>s)then
+			obj.zoom=0
+		elseif(1<=n and n<=10)then
+			obj.zoom=obj.zoom*Bezier_flow.time(n,s)
+		else
+			obj.zoom=obj.zoom*s
+		end
+	end
+
+elseif(mode==9)then
+
+	local afe=0
+	if(kk<0)then kk=-1*kk end
+	kk=kk*10
+	if(delay<t)then
+		s=delay/t
+		if(1<=n and n<=10)then
+			afe=afe+kk-Bezier_flow.time(n,s)*kk
+		else
+			afe=afe+kk-s*kk
+		end
+	end
+
+	if(obj.totaltime-delay-delaytime<t)then
+		s=(obj.totaltime-delay-delaytime)/t
+		if(1<s or 0>s)then
+			afe=afe+kk
+		elseif(1<=n and n<=10)then
+			afe=afe+kk-Bezier_flow.time(n,s)*kk
+		else
+			afe=afe+kk-s*kk
+		end
+	end
+
+	obj.effect("ぼかし","範囲",afe)
+
+elseif(mode==10)then
+
+	local afe=0
+	if(kk<0)then kk=-1*kk end
+	kk=kk*10
+	if(delay<t)then
+		s=delay/t
+		if(1<=n and n<=10)then
+			afe=afe+kk-Bezier_flow.time(n,s)*kk
+		else
+			afe=afe+kk-s*kk
+		end
+	end
+
+	if(obj.totaltime-delay-delaytime<t)then
+		s=(obj.totaltime-delay-delaytime)/t
+		if(1<s or 0>s)then
+			afe=afe+kk
+		elseif(1<=n and n<=10)then
+			afe=afe+kk-Bezier_flow.time(n,s)*kk
+		else
+			afe=afe+kk-s*kk
+		end
+	end
+
+	obj.effect("レンズブラー","範囲",afe,"サイズ固定",0)
+
+end
+
+
