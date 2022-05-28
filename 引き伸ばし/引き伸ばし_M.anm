@@ -1,0 +1,23 @@
+--[[
+
+ˆø‚«L‚Î‚µ_M.anm
+
+	‹P“x‚ğ‚à‚Æ‚Éˆø‚«L‚Î‚µ‚Ü‚·B
+	G‚È‚à‚Ì‚È‚Ì‚År‚ê‚ª–Ú—§‚¿‚Ü‚·B
+	M_Stretch_Module.dll‚ª•K—v‚Å‚·B
+
+]]
+
+
+--track0:Šp“x,-360,360,0,0.01
+--track1:ˆø‚«L‚Î‚µ,0.01,1000,100,0.01
+--check0:‹t,0
+
+local mymodule=require"M_Stretch_Module"
+local work,data,w,h=obj.getpixeldata"work",obj.getpixeldata()
+if(obj.check0)then
+mymodule.s(data,work,w,h,obj.track0,obj.track1,0)
+else
+mymodule.s(data,work,w,h,obj.track0,obj.track1,1)
+end
+obj.putpixeldata(work)
