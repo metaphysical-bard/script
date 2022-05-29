@@ -23,7 +23,7 @@ struct Pixel_RGBA {
 //ä÷êî
 static int	s(lua_State* L)
 {
-	//M_Stretch_Module.s(data,work,w,h,obj.track0,objtrack1,check)
+	//M_Stretch_Module.s(data,work,w,h,obj.track1,obj.track2,obj.track3,v,seed)
 
 	//ïœêî
 	struct Pixel_RGBA* data = lua_touserdata(L, 1);
@@ -32,10 +32,22 @@ static int	s(lua_State* L)
 	int h = lua_tointeger(L, 4);
 	float sita = lua_tonumber(L, 5);
 	float st = lua_tonumber(L, 6);
-	int ch = lua_tointeger(L, 7);
-
+	float raef = lua_tonumber(L, 7);
+	raef = raef / 100;
+	float vlua[256] = { 0 };
 	int i = 0;
+
+	for (i = 0; i < 256; i++) {
+		lua_rawgeti(L, 8, i + 1);
+		vlua[i] = lua_tointeger(L, -1);
+		lua_pop(L, 1);
+	}
+
+	int seed = lua_tointeger(L, 9);
+	srand(seed);
+
 	int x = 0, y = 0;
+	float ra = 0;
 
 	sita = sita * (M_PI / 180);
 	float tsin = sin(sita);
@@ -45,9 +57,9 @@ static int	s(lua_State* L)
 	for (y = 0; y < h; y++) {
 		for (x = 0; x < w; x++) {
 			int index = x + w * y;
-			work[index].r = 0;
-			work[index].g = 0;
-			work[index].b = 0;
+			work[index].r = data[index].r;
+			work[index].g = data[index].g;
+			work[index].b = data[index].b;
 			work[index].a = 0;
 		}
 	}
@@ -59,16 +71,17 @@ static int	s(lua_State* L)
 			int r = data[index].r;
 			int g = data[index].g;
 			int b = data[index].b;
+			ra = (rand() % 256);
 
 			float v = 0.299 * r + 0.587 * g + 0.114 * b;
 
-			if (ch) v = 255 - v;
-
 			int vv = (int)v;
+			if (vv < 0) vv = 0; else if (vv > 255) vv = 255;
+
+			vv = (int)(vlua[vv] + (ra - vlua[vv]) * raef);
+			float k = st * vv / 255;
 
 			float xx = 0, yy = 0;
-
-			float k = st * v / 255;
 
 			for (i = 0; i < k; i++) {
 				xx = i * tcos;
@@ -83,7 +96,7 @@ static int	s(lua_State* L)
 				if (xxx >= 0 && xxx < w) {
 					if (yyy >= 0 && yyy < h) {
 						int ix = xxx + w * yyy;
-						if (work[ix].a < v) {
+						if (work[ix].a < vv) {
 							work[ix].r = r;
 							work[ix].g = g;
 							work[ix].b = b;
@@ -99,7 +112,14 @@ static int	s(lua_State* L)
 	for (y = 0; y < h; y++) {
 		for (x = 0; x < w; x++) {
 			int index = x + w * y;
-			work[index].a = 255;
+			data[index].b = 0;
+			work[index].a = data[index].a;
+		}
+	}
+
+	for (y = 0; y < h; y++) {
+		for (x = 0; x < w; x++) {
+			int index = x + w * y;
 			int v = data[index].r;
 
 			float xx = 0, yy = 0;
@@ -119,8 +139,9 @@ static int	s(lua_State* L)
 				if (xxx >= 0 && xxx < w) {
 					if (yyy >= 0 && yyy < h) {
 						int ix = xxx + w * yyy;
-						if (work[ix].a < v) {
+						if (data[ix].b < v) {
 							work[ix].a = data[index].a;
+							data[ix].b = v;
 						}
 					}
 				}

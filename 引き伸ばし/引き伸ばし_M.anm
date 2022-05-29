@@ -8,16 +8,57 @@
 
 ]]
 
+--track0:Šî€‹P“x,0,255,255
+--track1:Šp“x,-360,360,0,0.01
+--track2:ˆø‚«L‚Î‚µ,-1000,1000,100
+--track3:ƒ‰ƒ“ƒ_ƒ€,0,100,0
+--dialog:seed,local seed=0;
 
---track0:Šp“x,-360,360,0,0.01
---track1:ˆø‚«L‚Î‚µ,0.01,1000,100,0.01
---check0:‹t,0
+--‹P“x0~255‚É‘Î‚·‚é‹­“x
+local v={}
+local tr=obj.track0
+for i=0,255 do
+	if(tr>i)then
+		if(tr==0)then
+			v[i+1]=255
+		else
+			v[i+1]=math.floor(i/tr*255)
+		end
+	else
+		if(tr==255)then
+			v[i+1]=255
+		else
+			v[i+1]=math.floor((1-(i-tr)/(256-tr))*255)
+		end
+	end
+end
 
+--seed‚ğ®”‚É
+if(seed<0)then
+	seed=math.floor(-1*seed)
+else
+	seed=math.floor(seed)
+end
+
+--ˆø‚«L‚Î‚µ‚ª•‰‚Ì‚Æ‚«‚É”¼‰ñ“]‚Æ0‰ñ”ğ
+local kaku,st=obj.track1,obj.track2
+if(st==0)then
+	st=0.00001
+elseif(st<0)then
+	st=-1*st
+	kaku=kaku+180
+end
+
+--dll‚É‚Ô‚ñ‚È‚°
 local mymodule=require"M_Stretch_Module"
 local work,data,w,h=obj.getpixeldata"work",obj.getpixeldata()
-if(obj.check0)then
-mymodule.s(data,work,w,h,obj.track0,obj.track1,0)
-else
-mymodule.s(data,work,w,h,obj.track0,obj.track1,1)
-end
+mymodule.s(data,work,w,h,kaku,st,obj.track3,v,seed)
 obj.putpixeldata(work)
+
+
+
+
+
+
+
+
