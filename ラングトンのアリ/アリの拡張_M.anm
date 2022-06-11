@@ -1,0 +1,100 @@
+--[[
+
+
+アリの拡張_M.anm
+	ラングトンのアリを拡張します。
+
+
+使い方
+	ラングトンのアリ_M.objの「拡張」にチェックした状態で、
+	すぐ下にアニメーション効果として付けると機能します。
+	基本的に一つのアニメ効果で一匹のアリの設定を上書きします。
+
+
+設定項目
+
+	アンカー番号
+		アンカー番号で設定したいアリを決めます。
+
+	初期方向
+		アリがどっちの方向を向いてスタートするか決めます。
+		上下左右の四方向です。
+
+	lag
+		アリを他のアリよりも遅れさせて移動させます。
+		step-lagで現在のアリのスッテプ数が分かります。
+
+	color
+		1にすると色選択ダイアログの値をアリの軌跡の色にします。
+		0の場合、ラングトンのアリ_M.objで決めた色をそのまま使用します。
+
+	lag*
+		lagの値に掛け算します。
+
+	色1～色4
+		colorが1の際にここにある色を使用します。
+
+	色5
+		色をテーブルにして指定することができます。
+
+
+]]
+
+--track0:アンカー番号,1,10,1,1
+--track1:初期方向,1,4,2,1
+--track2:lag,0,1000,0,0.01
+--track3:color,0,1,1,1
+--dialog:lag*,local s=100;色1/col,local ca=0x0000ff;色2/col,local cb=0xff0000;色3/col,local cc=0x00ff00;色4/col,local cd=0xffffff;色5,local ce={};
+
+local n,ln,lagn,c=obj.track0,obj.track1,obj.track2,obj.track3
+local p={}
+p=M_LangtonsAnt_Box
+local posnum=p[5]
+local crl=p[7]
+
+if(posnum>=n)then
+	p[11][n]=ln
+	lagn=math.floor(lagn*s)
+	if(lagn<0)then lagn=0 end
+	p[10][n]=lagn
+
+	if(c==1)then
+		local col={}
+		if(ca)then col[1]=ca end
+		if(cb)then col[#col+1]=cb end
+		if(cc)then col[#col+1]=cc end
+		if(cd)then col[#col+1]=cd end
+		if(#ce>0)then
+			for i=0,#ce-1 do
+			col[#col+1]=ce[i+1]
+			end
+		end
+		if(col[1]==nil)then col[1]=0xffffff end
+		for i=0,crl-#col do
+			local a=#col+1
+			col[a]=col[i+1]
+		end
+		local mm=(n-1)*3*crl
+		for i=0,crl-1 do
+			local r,g,b=RGB(col[i+1])
+			p[8][i*3+1+mm]=r
+			p[8][i*3+2+mm]=g
+			p[8][i*3+3+mm]=b
+		end
+	end
+end
+
+if(obj.getoption("script_name",1,true)=="アリの拡張_M")then
+	M_LangtonsAnt_Box=p
+else
+	local mymodule=require"M_LangtonsAnt_Module"
+	mymodule.s(p[1],p[2],p[3],p[4],p[5],p[6],p[7],p[8],p[9],p[10],p[11],p[12],p[13],p[14],p[15],p[16])
+	obj.putpixeldata(p[1])
+	if(size~=100)then
+		obj.effect("リサイズ","拡大率",p[17],"補間なし",1)
+	end
+	obj.effect()
+	obj.draw()
+	M_LangtonsAnt_Box={}
+end
+

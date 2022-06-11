@@ -1,0 +1,235 @@
+--[[
+
+
+ラングトンのアリ_M.obj
+	M_LangtonsAnt_Module.dllが必要です。
+	ラングトンのアリとは、下のリンクのやつです。
+	https://youtube.com/playlist?list=PL7f7XSuW92DL9YpSbMmWHsv-0NbYRXFtx
+
+
+設定項目
+
+	step
+		進行度を決めます。
+		step*の値が掛け算されるので注意が必要です。
+
+	横マス
+		横のマス目の数です。
+
+	縦マス
+		縦のマス目の数です。
+
+	リサイズ
+		フィルタ効果のリサイズと同じです。
+
+	info
+		チェックで左上に表示します。
+		アリの拡張の効果は反映されません。
+
+	pos
+		アンカーの座標です。
+		リサイズ前のアンカー位置を使用します。
+
+	アンカーの数
+		アンカーの数です。最大で10です。
+
+	step*
+		stepの値に掛け算します。
+
+	アリの色
+		アリのいる位置の色を決めます。
+		nilと入力するともとの場所の色になります。
+
+	色
+		色をテーブルで指定します。
+		色についてはinfoで表示されます。
+		一つ目の色、二つ目の色…の順番です。
+		例　{0xff00,0x00ff00}
+
+	右左
+		右と左の順番を決めます。
+		0で右、1で左です。
+		右、右、左みたいなこともできます。
+		最大で30個までです。
+		例　{0,0,1}
+
+	lim
+		保険です。
+		stepの数がめちゃくちゃ多いときのストッパーです。
+		-1にすると制限を解除します。(自己責任)
+
+	拡張
+		チェックすると、アニメ効果でアリの拡張を付けたときに
+		効果が反映されます。
+
+
+バグ報告など
+	https://twitter.com/metaphysicalba1
+
+
+]]
+
+
+--track0:step,0,1000,100,0.01
+--track1:横マス,1,2000,100,1
+--track2:縦マス,1,2000,100,1
+--track3:リサイズ,0,1000,100
+--check0:info,1
+--dialog:pos,pos={0,0,0};アンカー数,local posnum=1;step*,local ste=100;アリの色/col,local ac=0xffffff;色,local c={0x0000ff,0xff0000};右左,local rl={0,1};lim,local lim=10000000;拡張/chk,local ka=0;
+
+
+--変数処理
+local step,w,h,size=obj.track0,obj.track1,obj.track2,obj.track3
+local ch=obj.check0
+obj.setanchor("pos",posnum,"xyz")
+posnum=math.floor(#pos/3)
+if(posnum>10)then posnum=10 end
+local ct={}
+local lag={}
+local result={}
+local crl=#rl
+if(crl>30)then crl=30 end
+
+
+--アンカー座標
+for i=0,posnum-1 do
+	pos[i*3+1]=math.floor(pos[i*3+1]+w/2)
+	pos[i*3+2]=math.floor(pos[i*3+2]+h/2)
+	if(pos[i*3+1]<0)then pos[i*3+1]=0
+	elseif(pos[i*3+1]>w-1)then pos[i*3+1]=w-1 end
+	if(pos[i*3+2]<0)then pos[i*3+2]=0
+	elseif(pos[i*3+2]>h-1)then pos[i*3+2]=h-1 end
+end
+
+
+--lag
+for i=0,posnum-1 do
+	if(lag[i+1]==nil)then
+		lag[i+1]=0
+	else
+		lag[i+1]=math.floor(lag[i+1])
+		if(lag[i+1]<0)then lag[i+1]=0 end
+	end
+end
+
+
+--1color
+local co=1
+while #c<crl do
+	c[#c+1]=c[co]
+	co=co+1
+end
+for i=1,posnum-1 do
+	for j=1,crl do
+		c[i*crl+j]=c[j]
+	end
+end
+
+
+--2colorをRGBに分解
+for i=0,#c-1 do
+	ct[i*3+1],ct[i*3+2],ct[i*3+3]=RGB(c[i+1])
+end
+
+
+--rl
+for i=0,crl-1 do
+	if(rl[i+1]~=0)then
+		rl[i+1]=1
+	end
+end
+
+
+--初期方向
+local l={}
+for i=0,posnum-1 do
+l[i+1]=2
+end
+
+
+--limの値を決定
+if(lim==-1)then
+	lim=step*ste
+elseif(lim>step*ste)then
+	lim=step*ste
+end
+lim=math.floor(lim)
+
+
+--アリの色
+local ar,ag,ab
+if(ac==nil)then
+	ar,ag,ab=300,0,0
+else
+	ar,ag,ab=RGB(ac)
+end
+
+
+--仮想バッファの準備
+obj.setoption("drawtarget","tempbuffer",w,h)
+
+
+--info表示
+if(ch)then
+	local tsize=math.min(w,h)/20
+	obj.setfont("メイリオ",tsize,4)
+
+	for i=0,#rl-1 do
+		obj.setoption("drawtarget","tempbuffer")
+		obj.load("figure","四角形",c[i+1],tsize)
+		obj.draw(-w/2+tsize,-h/2+tsize*(i+1))
+	end
+
+	for i=0,#rl-1 do
+		obj.setoption("drawtarget","tempbuffer")
+		if(rl[i+1]==1)then obj.load("R")
+		else obj.load("L") end
+		obj.draw(-w/2+tsize,-h/2+tsize*(i+1))
+	end
+end
+
+
+--いったんロード
+obj.load("tempbuffer")
+
+
+--dataを取得してdllにぶんなげ(拡張の場合はグロ変に)
+local data,pw,ph=obj.getpixeldata()
+if(ka==1)then
+	M_LangtonsAnt_Box={data,pw,ph,lim,posnum,pos,crl,ct,rl,lag,l,1,ar,ag,ab,result,size}
+else
+	local mymodule=require"M_LangtonsAnt_Module"
+	mymodule.s(data,pw,ph,lim,posnum,pos,crl,ct,rl,lag,l,1,ar,ag,ab,result)
+	obj.putpixeldata(data)
+	if(size~=100)then
+		obj.effect("リサイズ","拡大率",size,"補間なし",1)
+	end
+	obj.effect()
+	obj.draw()
+end
+
+
+--[[
+dllについて
+
+アンカーの最大数は10
+pos,lag,lの最大数もそれに連動
+
+rlの最大数は30
+ctの最大数はrl*posnum
+
+座標の数とかの制限を突破したい場合はdllを書き換えてください。
+そこそこ汎用的なコードなので、配列の要素数を多くするだけのはず…
+
+modeの用意(スクリプト制御用)
+1 通常のモード。dataを表示する
+2 dataを残すモード。そのまま表示するのに意味はない
+3 dataをもとに計算するモード。表示ように変換
+4 dataをもとに計算するモード。そしてdataを残す
+
+modeは一時保存系のものと上手く使うことで処理を軽くすることを
+目指します。
+resultは空の配列を渡しておくと、dll側で最終的なアリの座標を入れます。
+
+]]
+
