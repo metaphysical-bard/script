@@ -1,0 +1,136 @@
+--[[
+
+砂状_M.anm
+	砂状いう名前がついていますが、ただのピクセル移動です。
+	M_Sand_Module.dllが必要です。
+
+設定項目
+
+	基準輝度
+		ピクセル同士が重なった際に表示を優先させる輝度を決めます。
+		引き伸ばし_M.anmとまったく同じです。
+
+	変化率
+		0で変化なし、100で一つ目のアンカー位置に移動します。
+
+	ずれ
+		ピクセルごとの変化率をずらします。
+
+	ランダム
+		ピクセルごとの変化率をランダムにします。
+
+	pos
+		変化率100の際にピクセルが収束する場所を決めます。
+		一つ目のアンカーの座標です。
+
+	table
+		ずれ方が10と11と12のときに使用します。
+		10と11のときには二つ目のアンカーの座標になります。
+		12のときにはループ用のテーブルになります。
+		(12のときの例 {0,0.5,1})
+
+	ずれ方
+		ずれ方を決めます。
+		 0 index順
+		 1 逆index順
+		 2 上
+		 3 下
+		 4 右
+		 5 左
+		 6 右上
+		 7 左上
+		 8 右下
+		 9 左下
+		10 アンカー
+		11 逆アンカー
+		12 テーブルでループ(最大で50)
+
+	seed
+		ランダムのseed値です。自然数にしてください。
+
+	方向係数のみ
+		posの方向だけをもとに移動するようになります。
+
+	minus
+		変化率がマイナスになっても移動するようになります。
+
+	over
+		アンカーに収束した後も移動するようになります。
+
+	補間
+		隙間を補間します。
+		補間したい間隔を打ち込むと補間されます。
+		通常は5ぐらいあれば大丈夫です。
+		ランダムとは相性が悪いです。併用非推奨。
+
+	addset
+		スクリプト制御、または汎用トラックバー用の小窓です。
+		変化率、ずれ、ランダムの順にテーブルで指定します。
+
+]]
+
+--track0:基準輝度,0,255,255
+--track1:変化率,-100,300,0
+--track2:ずれ,-100,100,0
+--track3:ランダム,-100,100,0
+--dialog:pos,pos={};table,p={};ずれ方,local zk=0;seed,local seed=0;方向係数のみ/chk,local ch=0;minus/chk,local ci=0;over/chk,local cii=0;補間,local c=0;addset,local as={0,0,0};
+
+--輝度0~255に対する強度
+local v={}
+local tr=obj.track0
+for i=0,255 do
+	if(tr>i)then
+		if(tr==0)then
+			v[i+1]=255
+		else
+			v[i+1]=math.floor(i/tr*255)
+		end
+	else
+		if(tr==255)then
+			v[i+1]=255
+		else
+			v[i+1]=math.floor((1-(i-tr)/(256-tr))*255)
+		end
+	end
+end
+
+--zを整数に
+if(zk<0)then zk=0 elseif(zk>12)then zk=12 else zk=math.floor(zk) end
+
+--seedを整数に
+if(seed<0)then
+	seed=math.floor(-1*seed)
+else
+	seed=math.floor(seed)
+end
+
+--dataの取得
+local mymodule=require"M_Sand_Module"
+local work,data,w,h=obj.getpixeldata"work",obj.getpixeldata()
+
+--アンカー
+obj.setanchor("pos",1,"xyz")
+if(ch~=1)then
+	pos[1]=pos[1]+w/2
+	pos[2]=pos[2]+h/2
+end
+
+--pに必要であれば値を
+if(zk==10 or zk==11)then
+	obj.setanchor("p",1,"xyz")
+	p[1]=p[1]+w/2
+	p[2]=p[2]+h/2
+else
+	if(p[1]==nil)then
+		p={}
+		p[1]=0
+	end
+	for i=1,#p do
+		if(p[i]==nil)then p[i]=0 end
+	end
+end
+
+--dllにぶんなげ
+mymodule.s(data,work,w,h,obj.track1+as[1],v,pos,obj.track2+as[2],obj.track3+as[3],zk,seed,ch,#p,p,ci,cii,c)
+obj.putpixeldata(work)
+
