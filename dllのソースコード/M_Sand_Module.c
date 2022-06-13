@@ -281,6 +281,7 @@ static int	s(lua_State* L)
 		}
 	}
 	else {
+		float sq = sqrt(2.0);
 		for (y = 0; y < h; y++) {
 			for (x = 0; x < w; x++) {
 				int index = x + w * y;
@@ -398,7 +399,7 @@ static int	s(lua_State* L)
 							g[count] = work[ix].g;
 							b[count] = work[ix].b;
 							a[count] = work[ix].a;
-							k[count] = sqrt(2.0) * cx;
+							k[count] = sq * cx;
 							count++;
 							count_g++;
 							break;
@@ -420,7 +421,7 @@ static int	s(lua_State* L)
 							g[count] = work[ix].g;
 							b[count] = work[ix].b;
 							a[count] = work[ix].a;
-							k[count] = sqrt(2.0) * cx;
+							k[count] = sq * cx;
 							count++;
 							count_g++;
 							break;
@@ -442,7 +443,7 @@ static int	s(lua_State* L)
 							g[count] = work[ix].g;
 							b[count] = work[ix].b;
 							a[count] = work[ix].a;
-							k[count] = sqrt(2.0) * cx;
+							k[count] = sq * cx;
 							count++;
 							count_ng++;
 							break;
@@ -464,7 +465,7 @@ static int	s(lua_State* L)
 							g[count] = work[ix].g;
 							b[count] = work[ix].b;
 							a[count] = work[ix].a;
-							k[count] = sqrt(2.0) * cx;
+							k[count] = sq * cx;
 							count++;
 							count_ng++;
 							break;
