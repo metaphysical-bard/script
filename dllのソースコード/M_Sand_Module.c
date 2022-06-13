@@ -258,15 +258,43 @@ static int	s(lua_State* L)
 		}
 	}
 
-	if (c != 0) {//テキトーな補間
+	for (y = 0; y < h; y++) {
+		for (x = 0; x < w; x++) {
+			int index = x + w * y;
+			data[index].r = 0;
+			data[index].g = 0;
+			data[index].b = 0;
+			data[index].a = 0;
+		}
+	}
+
+	//テキトーな補間
+	if (c <= 0) {
 		for (y = 0; y < h; y++) {
 			for (x = 0; x < w; x++) {
 				int index = x + w * y;
-				if (work[index].a == 0) {
+				data[index].r = work[index].r;
+				data[index].g = work[index].g;
+				data[index].b = work[index].b;
+				data[index].a = work[index].a;
+			}
+		}
+	}
+	else {
+		for (y = 0; y < h; y++) {
+			for (x = 0; x < w; x++) {
+				int index = x + w * y;
+				if (work[index].a) {
+					data[index].r = work[index].r;
+					data[index].g = work[index].g;
+					data[index].b = work[index].b;
+					data[index].a = work[index].a;
+				}
+				else {
 					float cx = 0;
 					int ix = 0;
-					int count = 0, count_x = 0, count_y = 0;
-					float r[4] = { 0 }, g[4] = { 0 }, b[4] = { 0 }, a[4] = { 0 }, k[4] = { 0 };
+					int count = 0, count_x = 0, count_y = 0, count_g = 0, count_ng = 0;
+					float r[8] = { 0 }, g[8] = { 0 }, b[8] = { 0 }, a[8] = { 0 }, k[8] = { 0 };
 
 					while (1) {//右方向
 						cx++;
@@ -355,7 +383,95 @@ static int	s(lua_State* L)
 						}
 					}
 
-					if (count_x == 2 || count_y == 2) {
+					cx = 0;
+					while (1) {//斜め１
+						cx++;
+
+						if (x + cx >= w || y + cx >= h)
+							break;
+						if (cx > c)
+							break;
+
+						ix = x + cx + w * (y + cx);
+						if (work[ix].a != 0) {
+							r[count] = work[ix].r;
+							g[count] = work[ix].g;
+							b[count] = work[ix].b;
+							a[count] = work[ix].a;
+							k[count] = sqrt(2.0) * cx;
+							count++;
+							count_g++;
+							break;
+						}
+					}
+
+					cx = 0;
+					while (1) {//斜め２
+						cx++;
+
+						if (x - cx < 0 || y - cx < 0)
+							break;
+						if (cx > c)
+							break;
+
+						ix = x - cx + w * (y - cx);
+						if (work[ix].a != 0) {
+							r[count] = work[ix].r;
+							g[count] = work[ix].g;
+							b[count] = work[ix].b;
+							a[count] = work[ix].a;
+							k[count] = sqrt(2.0) * cx;
+							count++;
+							count_g++;
+							break;
+						}
+					}
+
+					cx = 0;
+					while (1) {//斜め３
+						cx++;
+
+						if (x - cx < 0 || y + cx >= h)
+							break;
+						if (cx > c)
+							break;
+
+						ix = x - cx + w * (y + cx);
+						if (work[ix].a != 0) {
+							r[count] = work[ix].r;
+							g[count] = work[ix].g;
+							b[count] = work[ix].b;
+							a[count] = work[ix].a;
+							k[count] = sqrt(2.0) * cx;
+							count++;
+							count_ng++;
+							break;
+						}
+					}
+
+					cx = 0;
+					while (1) {//斜め２
+						cx++;
+
+						if (x + cx >= w || y - cx < 0)
+							break;
+						if (cx > c)
+							break;
+
+						ix = x + cx + w * (y - cx);
+						if (work[ix].a != 0) {
+							r[count] = work[ix].r;
+							g[count] = work[ix].g;
+							b[count] = work[ix].b;
+							a[count] = work[ix].a;
+							k[count] = sqrt(2.0) * cx;
+							count++;
+							count_ng++;
+							break;
+						}
+					}
+
+					if (count_x == 2 || count_y == 2 || count_g == 2 || count_ng == 2) {
 
 						float sg = 0;
 						float kr = 0, kg = 0, kb = 0, ka = 0;
@@ -384,10 +500,10 @@ static int	s(lua_State* L)
 						if (kb < 0) kb = 0; else if (kb > 255) kb = 255;
 						if (ka < 0) ka = 0; else if (ka > 255) ka = 255;
 
-						work[index].r = (int)kr;
-						work[index].g = (int)kg;
-						work[index].b = (int)kb;
-						work[index].a = (int)ka;
+						data[index].r = (int)kr;
+						data[index].g = (int)kg;
+						data[index].b = (int)kb;
+						data[index].a = (int)ka;
 					}
 				}
 			}

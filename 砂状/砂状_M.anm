@@ -132,5 +132,5 @@ end
 
 --dll‚É‚Ô‚ñ‚È‚°
 mymodule.s(data,work,w,h,obj.track1+as[1],v,pos,obj.track2+as[2],obj.track3+as[3],zk,seed,ch,#p,p,ci,cii,c)
-obj.putpixeldata(work)
+obj.putpixeldata(data)
 
