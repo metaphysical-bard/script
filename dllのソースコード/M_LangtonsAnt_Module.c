@@ -190,9 +190,16 @@ static int	s(lua_State* L)
 		}
 	}
 
+
+	//result‚ÉÅIˆÊ’u‚ÆÅI•ûŒü‚ğ‹l‚ß‚İ
 	for (i = 0; i < posnum * 3; i++) {
 		lua_pushnumber(L, p[i]);
 		lua_rawseti(L, 16, i + 1);
+	}
+
+	for (i = 0; i < posnum; i++) {
+		lua_pushinteger(L, l[i]);
+		lua_rawseti(L, 16, i + 1 + posnum * 3);
 	}
 
 
