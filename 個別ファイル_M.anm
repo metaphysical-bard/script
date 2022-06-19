@@ -1,0 +1,14 @@
+--[[
+
+個別ファイル_M.anm
+	指定した個別オブにファイルのイメージを貼り付けます。
+	MorphDots用。 
+
+]]
+
+
+--track0:index,0,100,0,1
+--file:
+if(obj.index==obj.track0)then
+obj.load(file)
+end
