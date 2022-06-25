@@ -71,16 +71,17 @@
 obj.setanchor("pos",1,"xyz")
 local work,data,w,h=obj.getpixeldata("work"),obj.getpixeldata()
 require("M_ColorShift_Module")
-M_ColorShift_Module.i(data,work,w,h,pos[1],pos[2],obj.track0,obj.track1,obj.track2,obj.track3,t,b,u,n)
 
 if(obj.check0)then
+	M_ColorShift_Module.i(data,work,w,h,pos[1],pos[2],obj.track0,obj.track1,obj.track2,obj.track3,t,b,0,n)
 	--ティムさんのmoduleでブラー
 	require("T_RotBlur_Module")
 	u=math.min(u,99.9)
 	T_RotBlur_Module.RadBlur(work,w,h,u,pos[1],pos[2],1)
 	obj.putpixeldata(work)
 else
-  obj.putpixeldata(work)
+	M_ColorShift_Module.i(data,work,w,h,pos[1],pos[2],obj.track0,obj.track1,obj.track2,obj.track3,t,b,u,n)
+	obj.putpixeldata(work)
 end
 
 
