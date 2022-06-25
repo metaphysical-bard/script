@@ -1,0 +1,86 @@
+--[[
+
+
+色ずれ_M.anm
+	M_ColorShift_Module.dllが必要です。
+	ティムさんのT_RotBlur_Module.dllがあるとお得です。
+
+
+概要
+	重たい色ずれです。
+	アンカーで中心点を決めれます。
+
+
+各種設定項目
+
+   ずれ幅
+	どれだけずらすかをRGB一斉に決めます。
+
+   R
+	微調整用です。ずれ幅に加算します。
+
+   G
+	微調整用です。ずれ幅に加算します。
+
+   B
+	微調整用です。ずれ幅に加算します。
+
+   TMODULE
+	ティムさんの放射ブラーをダウンロードした際に付いてくる、
+	T_RotBlur_Module.dllを使用します。
+	T_RotBlur_Module.dllは同じフォルダに置いてください。
+
+   pos
+	アンカーの座標です。
+
+   type
+	ずれ幅でどのように変化させるかです。
+	ずれ幅の大きい順に、
+		1 赤緑青
+		2 緑赤青
+		3 赤青緑
+		4 青赤緑
+		5 緑青赤
+		6 青緑赤  です。
+
+   ピンボケ
+	ぼかしです。
+	重たいので、本格的にぼかす場合はaviutlの標準ぼかしを使いましょう。
+
+   放射ブラー
+	放射ブラーです。
+	重たいです。
+	TMODULEにチェックがある場合、アンカーの計算が合わないかもしれません。
+	そのときはごめんなさい。
+
+   分解能
+	TMODULEにチェックがないときに使用します。
+	放射ブラーの精度はここで決まります。
+	上げすぎるとフリーズするので注意。
+
+
+]]
+
+--track0:ずれ幅,-10,100,5,0.01
+--track1:R,-30,30,0,0.01
+--track2:G,-30,30,0,0.01
+--track3:B,-30,30,0,0.01
+--check0:TMODULE,0
+--dialog:pos,pos={0,0,0};type1~6,local t=1;ピンボケ,local b=0;放射ブラー,local u=0;分解能,local n=10;
+
+obj.setanchor("pos",1,"xyz")
+local work,data,w,h=obj.getpixeldata("work"),obj.getpixeldata()
+require("M_ColorShift_Module")
+M_ColorShift_Module.i(data,work,w,h,pos[1],pos[2],obj.track0,obj.track1,obj.track2,obj.track3,t,b,u,n)
+
+if(obj.check0)then
+	--ティムさんのmoduleでブラー
+	require("T_RotBlur_Module")
+	u=math.min(u,99.9)
+	T_RotBlur_Module.RadBlur(work,w,h,u,pos[1],pos[2],1)
+	obj.putpixeldata(work)
+else
+  obj.putpixeldata(work)
+end
+
+
