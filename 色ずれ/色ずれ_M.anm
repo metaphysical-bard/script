@@ -73,7 +73,7 @@ local work,data,w,h=obj.getpixeldata("work"),obj.getpixeldata()
 require("M_ColorShift_Module")
 
 if(obj.check0)then
-	M_ColorShift_Module.i(data,work,w,h,pos[1],pos[2],obj.track0,obj.track1,obj.track2,obj.track3,t,b,0,n)
+	M_ColorShift_Module.i(data,work,w,h,pos[1],pos[2],obj.track0,obj.track1,obj.track2,obj.track3,t,b,0,0)
 	--ティムさんのmoduleでブラー
 	require("T_RotBlur_Module")
 	u=math.min(u,99.9)
