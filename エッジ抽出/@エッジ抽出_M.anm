@@ -1,0 +1,76 @@
+--[[
+
+エッジ抽出_M.anm
+	M_EdgeExtraction_Moduleが必要です。
+	後に修正予定。
+
+
+・ラプシアン(RGBA)
+	ラプシアンフィルタです。
+	トラックバーではしきい値を決めます。
+
+・ラプシアン(輝度)
+	ラプシアンフィルタです。
+	RGBAではなく、輝度の差をとります。
+
+・グラジエント(RGBA)
+	RGBAの差で色が付きます。
+	トラックバーの値は加算されます。
+
+・グラジエント(輝度)
+	グラジエント処理です。
+	輝度の差です。
+
+]]
+
+@ラプシアン(RGBA)
+--track0:R,0,255,50,1
+--track1:G,0,255,50,1
+--track2:B,0,255,50,1
+--track3:A,0,255,0,1
+--dialog:color/col,local col=0xffffff;透明化/chk,local a=0;絶対値/chk,local z=1;
+
+local r,g,b=RGB(col)
+local work,data,w,h=obj.getpixeldata("work"),obj.getpixeldata()
+require("M_EdgeExtraction_Module")
+M_EdgeExtraction_Module.i(data,work,w,h,obj.track0,obj.track1,obj.track2,obj.track3,r,g,b,a,z)
+obj.putpixeldata(data)
+
+
+@ラプシアン(輝度)
+--track0:強度,-100,100,0
+--track1:しきい値,0,100,0
+--dialog:color/col,local col=0xffffff;透明化/chk,local a=0;絶対値/chk,local z=1;
+
+local r,g,b=RGB(col)
+local data,w,h=obj.getpixeldata()
+require("M_EdgeExtraction_Module")
+M_EdgeExtraction_Module.d(data,w,h,obj.track0,r,g,b,a,z,obj.track1)
+obj.putpixeldata(data)
+
+@グラジエント(RGBA)
+--track0:R,0,255,0,1
+--track1:G,0,255,0,1
+--track2:B,0,255,0,1
+--track3:A,0,255,255,1
+--dialog:しきい値,local s=0;乗算にする/chk,local t=0;
+
+local data,w,h=obj.getpixeldata()
+require("M_EdgeExtraction_Module")
+M_EdgeExtraction_Module.s(data,w,h,obj.track0,obj.track1,obj.track2,obj.track3,t,s)
+obj.putpixeldata(data)
+
+@グラジエント(輝度)
+--track0:強度,0,1000,100
+--track1:しきい値,-100,100,0
+--dialog:color/col,local col=0xffffff;透明化/chk,local a=0;色付/chk,local i=0;
+
+local r,g,b=RGB(col)
+local data,w,h=obj.getpixeldata()
+require("M_EdgeExtraction_Module")
+M_EdgeExtraction_Module.r(data,w,h,obj.track0,obj.track1,r,g,b,a,i)
+obj.putpixeldata(data)
+
+
+
+
