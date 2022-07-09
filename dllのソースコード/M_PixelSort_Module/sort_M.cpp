@@ -943,89 +943,15 @@ void sort_M::Bokasi(Pixel_RGBA* work, Pixel_RGBA* data, int w, int h, float* q) 
 
 			b = b / count;
 
-			//A//////////////////////////////////////////
-			count = 0;
-			ef = *(q + index);
-
-			sl[0] = x - ef;
-			if (sl[0] < 0) sl[0] = 0;
-			else sl[0] = (int)sl[0];
-
-			sl[1] = x + ef;
-			if (sl[1] >= w) sl[1] = w - 1;
-			else sl[1] = (int)sl[1];
-
-			sl[2] = y - ef;
-			if (sl[2] < 0) sl[2] = 0;
-			else sl[2] = (int)sl[2];
-
-			sl[3] = y + ef;
-			if (sl[3] >= h) sl[3] = h - 1;
-			else sl[3] = (int)sl[3];
-
-			for (int i = sl[2]; i < sl[3] + 1; i++) {
-				for (int j = sl[0]; j < sl[1] + 1; j++) {
-					int index = j + w * i;
-					a = a + work[index].a;
-					count++;
-				}
-			}
-
-			//efが小数点の場合の処理
-			ef = (float)ef - ((int)ef);
-			if (sl[0] != 0 && sl[2] != 0) {//左上
-				a = a + work[(int)(sl[0] - 1 + w * (sl[2] - 1))].a * ef;
-				count = count + ef;
-			}
-			if (sl[1] != w - 1 && sl[2] != 0) {//右上
-				a = a + work[(int)(sl[1] + 1 + w * (sl[2] - 1))].a * ef;
-				count = count + ef;
-			}
-			if (sl[0] != 0 && sl[3] != h - 1) {//左下
-				a = a + work[(int)(sl[0] - 1 + w * (sl[2] + 1))].a * ef;
-				count = count + ef;
-			}
-			if (sl[1] != w - 1 && sl[2] != h - 1) {//右下
-				a = a + work[(int)(sl[1] + 1 + w * (sl[2] + 1))].a * ef;
-				count = count + ef;
-			}
-			if (sl[2] != 0) {//上
-				for (int z = sl[0]; z < sl[1] + 1; z++) {
-					a = a + work[(int)(z + w * (sl[2] - 1))].a * ef;
-					count = count + ef;
-				}
-			}
-			if (sl[3] != h - 1) {//下
-				for (int z = sl[0]; z < sl[1] + 1; z++) {
-					a = a + work[(int)(z + w * (sl[3] + 1))].a * ef;
-					count = count + ef;
-				}
-			}
-			if (sl[0] != 0) {//左
-				for (int z = sl[2]; z < sl[3] + 1; z++) {
-					a = a + work[(int)(sl[0] - 1 + w * z)].a * ef;
-					count = count + ef;
-				}
-			}
-			if (sl[1] != w - 1) {//右
-				for (int z = sl[2]; z < sl[3] + 1; z++) {
-					a = a + work[(int)(sl[1] + 1 + w * z)].a * ef;
-					count = count + ef;
-				}
-			}
-
-			a = a / count;
-
 			//RGBAをdataに
 			if (r < 0) r = 0; else if (r > 255) r = 255;
 			if (g < 0) g = 0; else if (g > 255) g = 255;
 			if (b < 0) b = 0; else if (b > 255) b = 255;
-			if (a < 0) a = 0; else if (a > 255) a = 255;
 
 			data[index].r = (int)r;
 			data[index].g = (int)g;
 			data[index].b = (int)b;
-			data[index].a = (int)a;
+			data[index].a = work[index].a;
 
 		}
 	}
