@@ -1,0 +1,239 @@
+--[[
+
+
+
+PixelSort_M.anm
+	M_PixelSort_Module.dllが必要です。
+	ピクセルを輝度をもとに並び替えるものです。
+
+
+
+作者の小言
+	割と直観的に使えると思います。
+	クオリティは少し残念なかんじです。
+	透過情報(A)があると、さらに残念になります。
+	optionsはmainのすぐ上に付けてください。
+	rotationとかはピクセルソートと関係ないです。
+
+
+
+概要
+	Psort_M(main)
+		ピクセルソートです。
+
+	Psort_M(options)
+		残念ピクセルソートのさらに残念機能を盛り込んだものです。
+		mainの補助として使います。使わなくても大丈夫です。
+
+	Psort_M(rotation)
+		どこか既視感あると思ったら、ティムさんの渦でした。
+		ということで、もはやいらない子。
+
+	Psort_M(anti-aliasing)
+		アンチエイリアスです。
+		エッジをもとにぼかします。
+		aviutlのぼかしと違って重たいので注意。
+
+	Psort_M(quantize)
+		画質を劣化させます。
+		↓これみて面白そうと思ったのと、没機能の供養。
+		https://scrapbox.io/ePi5131/Quantize.anm
+
+	Psort_M(sort)
+		全体でソートします。
+
+
+
+Psort_M(main)
+
+	角度
+		ピクセルを並び替える際の角度です。
+
+	基準輝度
+		基準となる輝度です。
+
+	輝度幅
+		基準輝度からの輝度幅です。
+		100ですべてのピクセルがソートします。
+
+	引き伸ばし
+		引き伸ばします。
+		100で一番端のピクセルが逆端までいきます。
+
+	アンカー
+		チェックするとアンカーを使えます。
+		アンカーでは角度を決めます。
+
+	座標
+		アンカー使用時の座標です。
+
+	逆順
+		ソートする向きが逆になります。
+
+	元画像
+		チェックすると、元画像も表示します。
+
+	軽処理
+		チェックすると少し軽くなります。
+		適度に使い分けてください。
+
+
+
+Psort_M(options)
+
+	R,G,B
+		輝度の式をトラックバーでいじれます。
+		具体的には、R,G,Bの三つの比をいじれます。
+		初期値は通常の輝度の式になっています。
+
+	引き伸ばし
+		mainの引き伸ばしとは違って、ランダムに引き伸ばします。
+		砂っぽくなります。
+
+	座標
+		ピクセル位置を動かします。
+
+	メモリ増量
+		メモリの確保量を増やします。
+		メモリ確保失敗すると意味ないし、処理量が増えるので、
+		あまりいい機能ではないです。画質も向上しません。
+
+	seed
+		ランダム要素のseed値です。
+		整数にしてください。
+
+
+
+Psort_M(rotation)
+
+	外側
+		外側をどれぐらい回転させるかです。
+
+	内側
+		内側をどれぐらい回転させるかです。
+
+	シフト
+		0で変化前、100で変化後になります。
+
+	倍率
+		シフトに掛け算します。
+
+	座標
+		中心座標をアンカーで決めれます。
+
+	サイズ固定
+		回転時にできる隙間を埋めます。
+
+
+
+Psort_M(anti-aliasing)
+
+	強度
+		アンチエイリアスの強度です。
+
+	倍率
+		強度の値に掛け算します。
+
+
+
+Psort_M(quantize)
+
+	劣化
+		値を上げると劣化します。
+
+
+
+バグ報告や機能の要望
+	https://twitter.com/metaphysicalba1
+
+
+
+]]
+
+
+@Psort_M(main)
+--track0:角度,-360,360,0,0.01
+--track1:基準輝度,0,255,120
+--track2:輝度幅,0,100,50
+--track3:引き伸ばし,0,100,0,0.01
+--dialog:アンカー/chk,local a=0;座標,pos={};逆順/chk,local g=0;元画像/chk,local m=1;軽処理/chk,local ch=1;
+
+local T,T1,T2,T3=math.rad(obj.track0),obj.track1,obj.track2,obj.track3
+r=r or 0
+
+if(a==1)then
+  obj.setanchor("pos",1,"xyz")
+  T=math.atan2(pos[2],pos[1])
+end
+
+local mymodule=require"M_PixelSort_Module"
+local data,w,h=obj.getpixeldata()
+
+if(obj.getoption("script_name",-1,true)=="Psort_M(options)@PixelSort_M")then
+  local sd=PixelSort_M_Options_Set
+  mymodule.s(data,w,h,T,T1,T2,T3,g,m,ch,sd[1],sd[2],sd[3],sd[4],sd[5],sd[6],sd[7],sd[8])
+else
+  mymodule.s(data,w,h,T,T1,T2,T3,g,m,ch,2.99,5.87,1.14,0,0,0,0)
+end
+
+obj.putpixeldata(data)
+
+
+@Psort_M(options)
+--track0:R,0,100,29.9,0.01
+--track1:G,0,100,58.7,0.01
+--track2:B,0,100,11.4,0.01
+--track3:引き伸ばし,0,100,0,0.01
+--dialog:座標,pos={0,0,0};メモリ増量,local m=0;seed,local s=0;
+
+obj.setanchor("pos",1,"xyz")
+
+if(s<0)then s=math.floor(-1*s)
+else s=math.floor(s) end
+
+if(obj.getoption("script_name",1,true)=="Psort_M(main)@PixelSort_M")then
+  PixelSort_M_Options_Set={obj.track0,obj.track1,obj.track2,obj.track3,pos[1],pos[2],m,s}
+else
+  PixelSort_M_Options_Set={}
+end
+
+
+@Psort_M(rotation)
+--track0:外側,-360,360,0,0.01
+--track1:内側,-360,360,0,0.01
+--track2:シフト,0,100,100
+--track3:倍率,0,100,1,0.01
+--dialog:座標,pos={};サイズ固定/chk,local ch=0;
+
+obj.setanchor("pos",1,"xyz")
+local mymodule=require"M_PixelSort_Module"
+local work,data,w,h=obj.getpixeldata"work",obj.getpixeldata()
+mymodule.k(data,work,w,h,obj.track0,obj.track1,obj.track2,obj.track3,pos[1],pos[2],ch)
+obj.putpixeldata(work)
+
+
+@Psort_M(anti-aliasing)
+--track0:強度,0,100,100,0.01
+--track1:倍率,0,10,1,0.01
+
+local mymodule=require"M_PixelSort_Module"
+local work,data,w,h=obj.getpixeldata"work",obj.getpixeldata()
+mymodule.a(data,work,w,h,obj.track0*obj.track1)
+obj.putpixeldata(work)
+
+
+@Psort_M(quantize)
+--track0:劣化,0,100,0,0.01
+
+local mymodule=require"M_PixelSort_Module"
+local data,w,h=obj.getpixeldata()
+mymodule.t(data,w,h,obj.track0)
+obj.putpixeldata(data)
+
+
+@Psort_M(sort)
+local mymodule=require"M_PixelSort_Module"
+local data,w,h=obj.getpixeldata()
+mymodule.o(data,w,h)
+obj.putpixeldata(data)
+
