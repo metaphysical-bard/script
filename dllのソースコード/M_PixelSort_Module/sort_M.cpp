@@ -21,8 +21,8 @@ void sort_M::rsize(Pixel_RGBA* data, int w, int h, Pixel_RGBA* work, int bw, int
 		index = bw * y;
 		for (int x = 0; x < bw; x++) {
 
-			double zx = x / haba;
-			double zy = y / haba;
+			double zx = (x - 0.5) / haba;//-0.5‚µ‚È‚¯‚ê‚Î‚µ‚È‚­‚Ä‚à‚¨‚‹
+			double zy = (y - 0.5) / haba;//
 
 			int ix = (int)zx;
 			int iy = (int)zy;
