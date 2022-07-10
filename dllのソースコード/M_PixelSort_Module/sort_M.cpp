@@ -528,9 +528,9 @@ void sort_M::pixelsort(Pixel_RGBA* a, int w, int h, float* k, float tk, float dk
 				}
 				else
 					if (moto == false) {
-						a[wy + i].r = 0;
-						a[wy + i].g = 0;
-						a[wy + i].b = 0;
+						//a[wy + i].r = 0;//ここはなくて大丈夫だっけ？
+						//a[wy + i].g = 0;//たぶんいらなかったと思うのでコメントアウト
+						//a[wy + i].b = 0;
 						a[wy + i].a = 0;
 					}
 			}
@@ -721,12 +721,13 @@ void sort_M::Bokasi(Pixel_RGBA* work, Pixel_RGBA* data, int w, int h, float* q) 
 	for (int y = 0; y < h; y++) {
 #pragma omp parallel for
 		for (int x = 0; x < w; x++) {
-			r = 0, g = 0, b = 0;
-			int index = x + w * y;
+			r = 0, g = 0, b = 0, a = 0;
+			int Ix = x + w * y;
+			int index = 0;
 
-			//R//////////////////////////////////////////
+			//RGBA//////////////////////////////////////////
 			count = 0;
-			ef = *(q + index);
+			ef = *(q + Ix);
 
 			sl[0] = x - ef;
 			if (sl[0] < 0) sl[0] = 0;
@@ -744,10 +745,13 @@ void sort_M::Bokasi(Pixel_RGBA* work, Pixel_RGBA* data, int w, int h, float* q) 
 			if (sl[3] >= h) sl[3] = h - 1;
 			else sl[3] = (int)sl[3];
 
-			for (int i = sl[2]; i < sl[3] + 1; i++) {
+			for (int i = sl[2]; i < sl[3] + 1; i++) {//周辺ピクセルの合計を求める
 				for (int j = sl[0]; j < sl[1] + 1; j++) {
-					int index = j + w * i;
+					index = j + w * i;
 					r = r + work[index].r;
+					g = g + work[index].g;
+					b = b + work[index].b;
+					a = a + work[index].a;
 					count++;
 				}
 			}
@@ -755,204 +759,93 @@ void sort_M::Bokasi(Pixel_RGBA* work, Pixel_RGBA* data, int w, int h, float* q) 
 			//efが小数点の場合の処理
 			ef = (float)ef - ((int)ef);
 			if (sl[0] != 0 && sl[2] != 0) {//左上
-				r = r + work[(int)(sl[0] - 1 + w * (sl[2] - 1))].r * ef;
+				index = (int)(sl[0] - 1 + w * (sl[2] - 1));
+				r = r + work[index].r * ef;
+				g = g + work[index].g * ef;
+				b = b + work[index].b * ef;
+				a = a + work[index].a * ef;
 				count = count + ef;
 			}
 			if (sl[1] != w - 1 && sl[2] != 0) {//右上
-				r = r + work[(int)(sl[1] + 1 + w * (sl[2] - 1))].r * ef;
+				index = (int)(sl[1] + 1 + w * (sl[2] - 1));
+				r = r + work[index].r * ef;
+				g = g + work[index].g * ef;
+				b = b + work[index].b * ef;
+				a = a + work[index].a * ef;
 				count = count + ef;
 			}
 			if (sl[0] != 0 && sl[3] != h - 1) {//左下
-				r = r + work[(int)(sl[0] - 1 + w * (sl[2] + 1))].r * ef;
+				index = (int)(sl[0] - 1 + w * (sl[2] + 1));
+				r = r + work[index].r * ef;
+				g = g + work[index].g * ef;
+				b = b + work[index].b * ef;
+				a = a + work[index].a * ef;
 				count = count + ef;
 			}
 			if (sl[1] != w - 1 && sl[2] != h - 1) {//右下
-				r = r + work[(int)(sl[1] + 1 + w * (sl[2] + 1))].r * ef;
+				index = (int)(sl[1] + 1 + w * (sl[2] + 1));
+				r = r + work[index].r * ef;
+				g = g + work[index].g * ef;
+				b = b + work[index].b * ef;
+				a = a + work[index].a * ef;
 				count = count + ef;
 			}
 			if (sl[2] != 0) {//上
 				for (int z = sl[0]; z < sl[1] + 1; z++) {
-					r = r + work[(int)(z + w * (sl[2] - 1))].r * ef;
+					index = (int)(z + w * (sl[2] - 1));
+					r = r + work[index].r * ef;
+					g = g + work[index].g * ef;
+					b = b + work[index].b * ef;
+					a = a + work[index].a * ef;
 					count = count + ef;
 				}
 			}
 			if (sl[3] != h - 1) {//下
 				for (int z = sl[0]; z < sl[1] + 1; z++) {
-					r = r + work[(int)(z + w * (sl[3] + 1))].r * ef;
+					index = (int)(z + w * (sl[3] + 1));
+					r = r + work[index].r * ef;
+					g = g + work[index].g * ef;
+					b = b + work[index].b * ef;
+					a = a + work[index].a * ef;
 					count = count + ef;
 				}
 			}
 			if (sl[0] != 0) {//左
 				for (int z = sl[2]; z < sl[3] + 1; z++) {
-					r = r + work[(int)(sl[0] - 1 + w * z)].r * ef;
+					index = (int)(sl[0] - 1 + w * z);
+					r = r + work[index].r * ef;
+					g = g + work[index].g * ef;
+					b = b + work[index].b * ef;
+					a = a + work[index].a * ef;
 					count = count + ef;
 				}
 			}
 			if (sl[1] != w - 1) {//右
 				for (int z = sl[2]; z < sl[3] + 1; z++) {
-					r = r + work[(int)(sl[1] + 1 + w * z)].r * ef;
+					index = (int)(sl[1] + 1 + w * z);
+					r = r + work[index].r * ef;
+					g = g + work[index].g * ef;
+					b = b + work[index].b * ef;
+					a = a + work[index].a * ef;
 					count = count + ef;
 				}
 			}
 
 			r = r / count;
-
-			//G//////////////////////////////////////////
-			count = 0;
-			ef = *(q + index);
-
-			sl[0] = x - ef;
-			if (sl[0] < 0) sl[0] = 0;
-			else sl[0] = (int)sl[0];
-
-			sl[1] = x + ef;
-			if (sl[1] >= w) sl[1] = w - 1;
-			else sl[1] = (int)sl[1];
-
-			sl[2] = y - ef;
-			if (sl[2] < 0) sl[2] = 0;
-			else sl[2] = (int)sl[2];
-
-			sl[3] = y + ef;
-			if (sl[3] >= h) sl[3] = h - 1;
-			else sl[3] = (int)sl[3];
-
-			for (int i = sl[2]; i < sl[3] + 1; i++) {
-				for (int j = sl[0]; j < sl[1] + 1; j++) {
-					int index = j + w * i;
-					g = g + work[index].g;
-					count++;
-				}
-			}
-
-			//efが小数点の場合の処理
-			ef = (float)ef - ((int)ef);
-			if (sl[0] != 0 && sl[2] != 0) {//左上
-				g = g + work[(int)(sl[0] - 1 + w * (sl[2] - 1))].g * ef;
-				count = count + ef;
-			}
-			if (sl[1] != w - 1 && sl[2] != 0) {//右上
-				g = g + work[(int)(sl[1] + 1 + w * (sl[2] - 1))].g * ef;
-				count = count + ef;
-			}
-			if (sl[0] != 0 && sl[3] != h - 1) {//左下
-				g = g + work[(int)(sl[0] - 1 + w * (sl[2] + 1))].g * ef;
-				count = count + ef;
-			}
-			if (sl[1] != w - 1 && sl[2] != h - 1) {//右下
-				g = g + work[(int)(sl[1] + 1 + w * (sl[2] + 1))].g * ef;
-				count = count + ef;
-			}
-			if (sl[2] != 0) {//上
-				for (int z = sl[0]; z < sl[1] + 1; z++) {
-					g = g + work[(int)(z + w * (sl[2] - 1))].g * ef;
-					count = count + ef;
-				}
-			}
-			if (sl[3] != h - 1) {//下
-				for (int z = sl[0]; z < sl[1] + 1; z++) {
-					g = g + work[(int)(z + w * (sl[3] + 1))].g * ef;
-					count = count + ef;
-				}
-			}
-			if (sl[0] != 0) {//左
-				for (int z = sl[2]; z < sl[3] + 1; z++) {
-					g = g + work[(int)(sl[0] - 1 + w * z)].g * ef;
-					count = count + ef;
-				}
-			}
-			if (sl[1] != w - 1) {//右
-				for (int z = sl[2]; z < sl[3] + 1; z++) {
-					g = g + work[(int)(sl[1] + 1 + w * z)].g * ef;
-					count = count + ef;
-				}
-			}
-
 			g = g / count;
-
-			//B//////////////////////////////////////////
-			count = 0;
-			ef = *(q + index);
-
-			sl[0] = x - ef;
-			if (sl[0] < 0) sl[0] = 0;
-			else sl[0] = (int)sl[0];
-
-			sl[1] = x + ef;
-			if (sl[1] >= w) sl[1] = w - 1;
-			else sl[1] = (int)sl[1];
-
-			sl[2] = y - ef;
-			if (sl[2] < 0) sl[2] = 0;
-			else sl[2] = (int)sl[2];
-
-			sl[3] = y + ef;
-			if (sl[3] >= h) sl[3] = h - 1;
-			else sl[3] = (int)sl[3];
-
-			for (int i = sl[2]; i < sl[3] + 1; i++) {
-				for (int j = sl[0]; j < sl[1] + 1; j++) {
-					int index = j + w * i;
-					b = b + work[index].b;
-					count++;
-				}
-			}
-
-			//efが小数点の場合の処理
-			ef = (float)ef - ((int)ef);
-			if (sl[0] != 0 && sl[2] != 0) {//左上
-				b = b + work[(int)(sl[0] - 1 + w * (sl[2] - 1))].b * ef;
-				count = count + ef;
-			}
-			if (sl[1] != w - 1 && sl[2] != 0) {//右上
-				b = b + work[(int)(sl[1] + 1 + w * (sl[2] - 1))].b * ef;
-				count = count + ef;
-			}
-			if (sl[0] != 0 && sl[3] != h - 1) {//左下
-				b = b + work[(int)(sl[0] - 1 + w * (sl[2] + 1))].b * ef;
-				count = count + ef;
-			}
-			if (sl[1] != w - 1 && sl[2] != h - 1) {//右下
-				b = b + work[(int)(sl[1] + 1 + w * (sl[2] + 1))].b * ef;
-				count = count + ef;
-			}
-			if (sl[2] != 0) {//上
-				for (int z = sl[0]; z < sl[1] + 1; z++) {
-					b = b + work[(int)(z + w * (sl[2] - 1))].b * ef;
-					count = count + ef;
-				}
-			}
-			if (sl[3] != h - 1) {//下
-				for (int z = sl[0]; z < sl[1] + 1; z++) {
-					b = b + work[(int)(z + w * (sl[3] + 1))].b * ef;
-					count = count + ef;
-				}
-			}
-			if (sl[0] != 0) {//左
-				for (int z = sl[2]; z < sl[3] + 1; z++) {
-					b = b + work[(int)(sl[0] - 1 + w * z)].b * ef;
-					count = count + ef;
-				}
-			}
-			if (sl[1] != w - 1) {//右
-				for (int z = sl[2]; z < sl[3] + 1; z++) {
-					b = b + work[(int)(sl[1] + 1 + w * z)].b * ef;
-					count = count + ef;
-				}
-			}
-
 			b = b / count;
+			a = a / count;
 
 			//RGBAをdataに
 			if (r < 0) r = 0; else if (r > 255) r = 255;
 			if (g < 0) g = 0; else if (g > 255) g = 255;
 			if (b < 0) b = 0; else if (b > 255) b = 255;
+			if (a < 0) a = 0; else if (a > 255) a = 255;
 
-			data[index].r = (int)r;
-			data[index].g = (int)g;
-			data[index].b = (int)b;
-			data[index].a = work[index].a;
-
+			data[Ix].r = (int)r;
+			data[Ix].g = (int)g;
+			data[Ix].b = (int)b;
+			data[Ix].a = (int)a;
 		}
 	}
 }
