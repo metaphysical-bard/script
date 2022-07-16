@@ -1,0 +1,17 @@
+--[[
+
+noise_M.anm
+	ノイズです。
+	M_Noise_Module.dllが必要です。
+	seed値がお仕事してくれません。
+
+]]
+
+--track0:Size,0,10,1,0.01
+--track1:Octaves,1,10,2,1
+--track2:SubSize,0,1,1,0.01
+--track3:seed,0,100,0,1
+local mymodule=require"M_Noise_Module"
+local data,w,h=obj.getpixeldata()
+mymodule.s(data,w,h,obj.track0,obj.track1,obj.track2)
+obj.putpixeldata(data)
