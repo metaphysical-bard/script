@@ -1,0 +1,85 @@
+--[[
+
+
+ディスずらし_M.anm
+	ディスプレイスメントマップ(拡大)の影響度をRGBでずらします。
+	フレームバッファに使うことを想定しています。
+
+
+設定項目
+
+	影響度
+		どれだけずらすかを決めます。
+
+	map
+		マップレイヤーを指定します。
+		ディスプレイスメントマップはマップレイヤーにある
+		オブジェクトをソースにしてやります。
+
+	mode
+		影響度の大くなる順に、
+		1 赤緑青
+		2 緑赤青
+		3 赤青緑
+		4 青赤緑
+		5 緑青赤
+		6 青緑赤	です。
+
+
+]]
+
+--track0:影響度,0,500,100,0.01
+--track1:map,1,100,1,1
+--track2:mode,1,6,1,1
+
+--変数
+local e=obj.track0
+local map=obj.track1
+local mode=obj.track2
+
+--影響度をRGBごとに決定
+local ef={}
+if(mode==1)then
+	ef={e,e/2,0}
+elseif(mode==2)then
+	ef={e/2,e,0}
+elseif(mode==3)then
+	ef={e,0,e/2}
+elseif(mode==4)then
+	ef={e/2,0,e}
+elseif(mode==5)then
+	ef={0,e,e/2}
+else
+	ef={0,e/2,e}
+end
+
+--現在のイメージを保存
+obj.copybuffer("cache:ori_img","obj")
+
+--mapレイヤーのイメージを仮想バッファに
+obj.load("layer",map,true)
+obj.copybuffer("tmp","obj")
+
+--描画先の変更と黒背景をしく
+obj.setoption("drawtarget","framebuffer")
+obj.load("figure","背景",0x000000)
+obj.draw()
+
+--描画用の関数
+local function ddd(col,ef)
+obj.copybuffer("obj","cache:ori_img")
+obj.effect("グラデーション","color",col,"color2",col,"blend",3)
+obj.effect("ディスプレイスメントマップ","calc",1,"param0",ef,"name","*tempbuffer","元のサイズに合わせる",1)
+obj.setoption("blend",1)
+obj.draw()
+end
+
+--red処理
+ddd(0xff0000,ef[1])
+
+--green処理
+ddd(0x00ff00,ef[2])
+
+--blue処理
+ddd(0x0000ff,ef[3])
+
